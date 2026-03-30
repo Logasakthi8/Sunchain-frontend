@@ -10,6 +10,15 @@ function Feed() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [categories, setCategories] = useState(['All']);
 
+  // Define the 5 main categories with their display names
+  const mainCategories = [
+    '🧠 Philosophy',
+    '💻 Technology',
+    '🚀 Startups',
+    '🧘 Self Growth',
+    '🏥 Health'
+  ];
+
   useEffect(() => {
     loadPosts();
   }, []);
@@ -25,9 +34,10 @@ function Feed() {
       console.log('Posts loaded:', response.data);
       setPosts(response.data);
       
-      // Extract unique categories from posts
-      const uniqueCategories = ['All', ...new Set(response.data.map(post => post.category).filter(Boolean))];
-      setCategories(uniqueCategories);
+      // Extract unique categories from posts and combine with main categories
+      const postCategories = [...new Set(response.data.map(post => post.category).filter(Boolean))];
+      const allCategories = ['All', ...mainCategories];
+      setCategories(allCategories);
       
       setError('');
     } catch (err) {
