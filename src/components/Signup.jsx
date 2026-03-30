@@ -39,7 +39,7 @@ function Signup() {
 
   return (
     <div className="card" style={{ maxWidth: '400px', margin: '2rem auto' }}>
-      <h2>Join Mindful Blog</h2>
+      <h2>Join Sunchain</h2>
       <p style={{ color: '#718096', marginBottom: '1.5rem' }}>Start your writing journey today</p>
       
       {error && <div className="error">{error}</div>}
