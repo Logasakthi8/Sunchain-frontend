@@ -27,7 +27,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="logo">📝 Mindful Blog</Link>
+        <Link to="/" className="logo">📝 Sunchain</Link>
         <div className="nav-links">
           <Link to="/">Feed</Link>
           <Link to="/create">Write</Link>
