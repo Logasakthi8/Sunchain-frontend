@@ -28,7 +28,6 @@ function FullPost() {
     loadPost();
   }, [id]);
 
-  // Track scroll percentage
   useEffect(() => {
     const handleScroll = () => {
       if (!contentRef.current) return;
@@ -46,7 +45,6 @@ function FullPost() {
         const percentage = (scrollPosition / scrollableHeight) * 100;
         setScrollPercentage(Math.min(100, Math.max(0, percentage)));
         
-        // Enable like at 60% scroll
         if (percentage >= 60 && !likeEnabled && !authError) {
           setLikeEnabled(true);
           setShowUnlock(true);
@@ -83,41 +81,23 @@ function FullPost() {
   };
 
   const handleLike = async () => {
-    console.log('Like button clicked - Enabled:', likeEnabled, 'Liked:', liked, 'Loading:', likeLoading);
-    
     if (!likeEnabled) {
-      console.log('Like not enabled yet - need to scroll more');
       alert('Please scroll to 60% of the post to unlock the like button!');
       return;
     }
     
-    if (liked) {
-      console.log('Already liked this post');
-      return;
-    }
-    
-    if (likeLoading) {
-      console.log('Like request in progress');
-      return;
-    }
+    if (liked || likeLoading) return;
     
     setLikeLoading(true);
     try {
-      console.log('Sending like request for post:', id);
       const response = await likePost(id);
-      console.log('Like response:', response.data);
-      
       if (response.data.success !== false) {
         setLiked(true);
         setPost({ ...post, likes: (post.likes || 0) + 1 });
-        console.log('Post liked successfully! New likes count:', post.likes + 1);
-      } else {
-        console.error('Like failed:', response.data.message);
-        alert('Failed to like post: ' + response.data.message);
       }
     } catch (err) {
       console.error('Failed to like post:', err);
-      alert('Failed to like post. Please try again. Error: ' + (err.response?.data?.message || err.message));
+      alert('Failed to like post. Please try again.');
     } finally {
       setLikeLoading(false);
     }
@@ -170,9 +150,14 @@ function FullPost() {
         <p style={{ margin: '1rem 0', color: '#718096' }}>
           Please sign in to read full posts and interact with the community.
         </p>
-        <button onClick={handleLoginRedirect} style={{ marginTop: '1rem' }}>
-          Sign In
-        </button>
+        <div className="modal-auth-buttons" style={{ justifyContent: 'center' }}>
+          <button onClick={() => navigate('/login')} className="login-btn">
+            Login
+          </button>
+          <button onClick={() => navigate('/signup')} className="signup-btn">
+            Sign Up
+          </button>
+        </div>
       </div>
     );
   }
@@ -211,7 +196,6 @@ function FullPost() {
         dangerouslySetInnerHTML={renderContent(post.content)}
       />
       
-      {/* Scroll progress indicator */}
       <div style={{ 
         height: '3px', 
         background: '#e2e8f0', 
