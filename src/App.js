@@ -22,7 +22,7 @@ function App() {
         {!isAuthenticated && (
           <nav className="navbar public-navbar">
             <div className="navbar-container">
-              <Link to="/" className="logo">📝 Mindful Blog</Link>
+              <Link to="/" className="logo">📝 Sunchain</Link>
               <div className="nav-links">
                 <Link to="/login">Login</Link>
                 <Link to="/signup">Sign Up</Link>
