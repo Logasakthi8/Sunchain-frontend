@@ -7,7 +7,7 @@ function CreatePost() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
-    category: 'Tech',
+    category: '🧘 Self Growth',
     content: ''
   });
   const [image, setImage] = useState(null);
@@ -18,7 +18,14 @@ function CreatePost() {
   const [previewMode, setPreviewMode] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
 
-  const categories = ['Tech', 'Startups', 'Health', 'Philosophy', 'Spirituality', 'Lifestyle', 'Education', 'Art'];
+  // Updated categories with emojis
+  const categories = [
+    '🧠 Philosophy',
+    '💻 Technology',
+    '🚀 Startups',
+    '🧘 Self Growth',
+    '🏥 Health'
+  ];
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -179,16 +186,19 @@ function CreatePost() {
             </div>
             
             <div className="form-group">
-              <label>Content(HTML Supported)</label>
+              <label>Content (HTML Supported)</label>
               <textarea
                 name="content"
                 value={formData.content}
                 onChange={handleChange}
                 required
                 rows="15"
-                placeholder="Write your content here."
+                placeholder="Write your content here. You can use HTML tags for formatting."
                 style={{ fontFamily: 'monospace' }}
               />
+              <small style={{ color: '#718096', display: 'block', marginTop: '0.5rem' }}>
+                💡 Tip: You can use HTML tags like &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, etc.
+              </small>
             </div>
             
             <button type="submit" disabled={loading}>
@@ -215,9 +225,7 @@ function CreatePost() {
               />
             )}
             {formData.content ? (
-              <div 
-                className="preview-box"
-              >
+              <div className="preview-box">
                 <div 
                   className="preview-content"
                   dangerouslySetInnerHTML={renderPreview()}
