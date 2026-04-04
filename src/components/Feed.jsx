@@ -20,12 +20,21 @@ function Feed() {
   const loadPosts = async () => {
     try {
       const response = await getPosts();
+      console.log('Posts loaded:', response.data);
+      // Log image data for debugging
+      response.data.forEach((post, index) => {
+        if (post.image_base64) {
+          console.log(`Post ${index} has image:`, post.image_base64.substring(0, 50) + '...');
+        } else {
+          console.log(`Post ${index} has no image`);
+        }
+      });
       setPosts(response.data);
       setFilteredPosts(response.data);
       setError('');
     } catch (err) {
       console.error('Failed to load posts:', err);
-      setError('Unable to load stories. Please refresh the page.');
+      setError('Failed to load posts. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -61,12 +70,11 @@ function Feed() {
 
   return (
     <div className="row-feed-container">
-      {/* Hero Section */}
       <div className="row-hero">
         <div className="row-hero-content">
           <span className="hero-badge">✨ Discover</span>
           <h1>Stories That <span className="gradient-text">Inspire</span></h1>
-          <p>Explore thoughtful stories from writers around the world</p>
+          <p>Explore thoughtful articles from writers around the world</p>
           <div className="row-search-wrapper">
             <div className="row-search-box">
               <span className="search-icon">🔍</span>
@@ -87,12 +95,11 @@ function Feed() {
         </div>
         <div className="hero-wave">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120">
-            <path fill="#f5f7fa" fillOpacity="1" d="M0,64L48,69.3C96,75,192,85,288,85.3C384,85,480,75,576,64C672,53,768,43,864,48C960,53,1056,75,1152,80C1248,85,1344,75,1392,69.3L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+            <path fill="#f8fafc" fillOpacity="1" d="M0,64L48,69.3C96,75,192,85,288,85.3C384,85,480,75,576,64C672,53,768,43,864,48C960,53,1056,75,1152,80C1248,85,1344,75,1392,69.3L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
           </svg>
         </div>
       </div>
 
-      {/* Results Stats */}
       <div className="row-stats">
         <div className="stats-left">
           <span className="stats-icon">📚</span>
@@ -100,7 +107,6 @@ function Feed() {
         </div>
       </div>
 
-      {/* Posts - Row Based Layout */}
       {filteredPosts.length === 0 ? (
         <div className="empty-row-state">
           <div className="empty-animation">🔍</div>
