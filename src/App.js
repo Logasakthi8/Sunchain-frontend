@@ -22,10 +22,10 @@ function App() {
             <div className="public-navbar-container">
               <Link to="/" className="public-logo">
                 <span className="public-logo-icon">📝</span>
-                <span className="public-logo-text">Mindful Blog</span>
+                <span className="public-logo-text">Sunchain</span>
               </Link>
               <div className="public-nav-links">
-                <Link to="/" className="public-nav-link">Home</Link>
+                <Link to="/" className="public-nav-link">Stories</Link>
                 <Link to="/login" className="public-nav-link login-link">Login</Link>
                 <Link to="/signup" className="public-nav-link signup-link">Sign Up</Link>
               </div>
