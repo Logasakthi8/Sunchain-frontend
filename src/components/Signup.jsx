@@ -21,13 +21,10 @@ function Signup() {
       const response = await signup(formData);
       console.log('Signup response:', response.data);
       
-      // Store token and user data
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
-      // Navigate to home page
       navigate('/');
-      // Force reload to refresh navbar
       window.location.reload();
     } catch (err) {
       console.error('Signup error:', err);
@@ -38,57 +35,125 @@ function Signup() {
   };
 
   return (
-    <div className="card" style={{ maxWidth: '400px', margin: '2rem auto' }}>
-      <h2>Join Sunchain</h2>
-      <p style={{ color: '#718096', marginBottom: '1.5rem' }}>Start your writing journey today</p>
-      
-      {error && <div className="error">{error}</div>}
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Username</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            placeholder="Choose a username"
-          />
+    <div className="auth-container">
+      <div className="auth-card">
+        {/* Left Side - Illustration with Motivational Content */}
+        <div className="auth-illustration">
+          <div className="illustration-content">
+            <div className="illustration-icon">✍️</div>
+            <h2>Share Your Story</h2>
+            <h3>Create Impact</h3>
+            <p>Join thousands of writers making a difference</p>
+
+            <div className="motivation-quote">
+              <div className="quote-mark">"</div>
+              <p>Your voice matters. Every story you share has the power to inspire, heal, and transform lives.</p>
+            </div>
+
+            <div className="illustration-features">
+              <div className="feature">
+                <span>📝</span>
+                <span>Write & Share</span>
+              </div>
+              <div className="feature">
+                <span>⭐</span>
+                <span>Earn Points</span>
+              </div>
+              <div className="feature">
+                <span>🌍</span>
+                <span>Build Community</span>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            placeholder="Enter your email"
-          />
+
+        {/* Right Side - Form */}
+        <div className="auth-form">
+          <div className="form-header">
+            <h2>Create Account</h2>
+            <p>Start your writing journey today</p>
+          </div>
+
+          {error && (
+            <div className="auth-error">
+              <span className="error-icon">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form-fields">
+            <div className="input-group">
+              <label>
+                <span className="input-icon">👤</span>
+                Username
+              </label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                placeholder="Choose a username"
+                className="auth-input"
+              />
+            </div>
+
+            <div className="input-group">
+              <label>
+                <span className="input-icon">📧</span>
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="Enter your email"
+                className="auth-input"
+              />
+            </div>
+
+            <div className="input-group">
+              <label>
+                <span className="input-icon">🔒</span>
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="Create a password"
+                className="auth-input"
+              />
+              <p className="password-hint">Must be at least 6 characters</p>
+            </div>
+
+            <button type="submit" disabled={loading} className="auth-submit-btn">
+              {loading ? (
+                <>
+                  <span className="spinner-small"></span>
+                  Creating account...
+                </>
+              ) : (
+                'Sign Up'
+              )}
+            </button>
+          </form>
+
+          <div className="auth-footer">
+            <p>
+              Already have an account? <Link to="/login" className="auth-link">Sign in</Link>
+            </p>
+          </div>
+
+          <div className="auth-terms">
+            <p>By signing up, you agree to share your story and make an impact</p>
+          </div>
         </div>
-        
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            placeholder="Create a password"
-          />
-        </div>
-        
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creating account...' : 'Sign Up'}
-        </button>
-      </form>
-      
-      <p style={{ marginTop: '1rem', textAlign: 'center' }}>
-        Already have an account? <Link to="/login">Sign in</Link>
-      </p>
+      </div>
     </div>
   );
 }
