@@ -1653,3 +1653,70 @@ body {
     font-size: 0.8rem;
   }
 }
+/* Write First Story Button Styles */
+.write-first-btn {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.8rem;
+  border-radius: 40px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.write-first-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.write-first-btn:active {
+  transform: translateY(0);
+}
+
+/* Empty State Container */
+.empty-posts-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin: 2rem 0;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  animation: bounce 2s ease infinite;
+}
+
+.empty-posts-state h3 {
+  font-size: 1.3rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.empty-posts-state p {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+/* Alternative button style if you want an icon inside */
+.write-first-btn::before {
+  content: "✍️";
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.write-first-btn:hover::before {
+  transform: rotate(-5deg);
+}
