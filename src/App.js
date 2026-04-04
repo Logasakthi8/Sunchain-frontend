@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Feed from './components/Feed';
 import FullPost from './components/FullPost';
@@ -15,16 +15,14 @@ function App() {
   return (
     <Router>
       <div className="app">
-        {/* Show Navbar only for authenticated users */}
         {isAuthenticated && <Navbar />}
         
-        {/* Show styled header for non-authenticated users */}
         {!isAuthenticated && (
           <nav className="public-navbar-modern">
             <div className="public-navbar-container">
               <Link to="/" className="public-logo">
                 <span className="public-logo-icon">📝</span>
-                <span className="public-logo-text">Sunchain</span>
+                <span className="public-logo-text">Mindful Blog</span>
               </Link>
               <div className="public-nav-links">
                 <Link to="/" className="public-nav-link">Home</Link>
