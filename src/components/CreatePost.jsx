@@ -1,68 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPost } from '../api';
 import Confetti from 'react-confetti';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 function CreatePost() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
-    category: '🧘 Self Growth',
-    content: ''
+    content: '',
+    coverImage: null,
+    coverImagePreview: null
   });
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
   const [loading, setLoading] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState('');
+  const [titleError, setTitleError] = useState('');
+  const [wordCount, setWordCount] = useState(0);
+  const [readingTime, setReadingTime] = useState(0);
+  const quillRef = useRef(null);
 
-  // Updated categories with emojis
-  const categories = [
-    '🧠 Philosophy',
-    '💻 Technology',
-    '🚀 Startups',
-    '🧘 Self Growth',
-    '🏥 Health'
-  ];
+  // Calculate word count and reading time
+  useEffect(() => {
+    const text = formData.content.replace(/<[^>]*>/g, '');
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    setWordCount(words);
+    setReadingTime(Math.ceil(words / 200));
+  }, [formData.content]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Quill modules configuration
+  const modules = {
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'align': [] }],
+        ['link', 'image', 'video'],
+        ['clean']
+      ],
+    },
+    clipboard: {
+      matchVisual: false,
+    }
   };
 
-  const handleImageChange = (e) => {
+  const formats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'blockquote', 'code-block', 'list', 'bullet', 'indent',
+    'color', 'background', 'align', 'link', 'image', 'video'
+  ];
+
+  const handleCoverImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      console.log('Selected file:', file.name, 'Size:', file.size, 'Type:', file.type);
-      setImage(file);
-      // Create preview URL
       const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-      setUploadStatus(`Selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+      setFormData({
+        ...formData,
+        coverImage: file,
+        coverImagePreview: previewUrl
+      });
     }
+  };
+
+  const handleTitleChange = (e) => {
+    const title = e.target.value;
+    setFormData({ ...formData, title });
+    if (title.length < 3 && title.length > 0) {
+      setTitleError('Title should be at least 3 characters');
+    } else {
+      setTitleError('');
+    }
+  };
+
+  const handleContentChange = (value) => {
+    setFormData({ ...formData, content: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.title.length < 3) {
+      setTitleError('Title must be at least 3 characters');
+      return;
+    }
+    
     setLoading(true);
     
-    const data = new FormData();
-    data.append('title', formData.title);
-    data.append('category', formData.category);
-    data.append('content', formData.content);
-    if (image) {
-      data.append('image', image);
-      console.log('Appending image to form data:', image.name);
+    const submitData = new FormData();
+    submitData.append('title', formData.title);
+    submitData.append('content', formData.content);
+    
+    if (formData.coverImage) {
+      submitData.append('coverImage', formData.coverImage);
     }
     
     try {
-      const response = await createPost(data);
-      console.log('Post created successfully:', response.data);
+      const response = await createPost(submitData);
       setPointsEarned(response.data.points_earned);
       setShowCelebration(true);
       
-      // Update user points in localStorage
       const user = JSON.parse(localStorage.getItem('user'));
       if (user) {
         user.points += response.data.points_earned;
@@ -87,155 +128,138 @@ function CreatePost() {
   };
 
   return (
-    <div>
+    <div className="story-editor">
       {showCelebration && (
         <>
           <Confetti />
           <div className="modal-overlay">
-            <div className="modal">
-              <h2>🎉 Successfully Published!</h2>
-              <div className="points">+{pointsEarned} Points Earned</div>
-              <div className="total-points">
+            <div className="modal celebration-modal">
+              <div className="celebration-icon">🎉</div>
+              <h2>Successfully Published!</h2>
+              <div className="points-earned">+{pointsEarned} Points Earned</div>
+              <div className="total-points-display">
                 Total Points: {JSON.parse(localStorage.getItem('user'))?.points || 0}
               </div>
-              <p>Share your achievement with your community 🚀</p>
+              <p>Your story is now live! Share it with the world 🌍</p>
               <button onClick={() => setShowCelebration(false)}>Continue</button>
             </div>
           </div>
         </>
       )}
       
-      <div className="card">
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-          <button 
-            onClick={() => setPreviewMode(false)}
-            style={{ 
-              background: !previewMode ? '#4299e1' : '#e2e8f0',
-              color: !previewMode ? 'white' : '#4a5568'
-            }}
-          >
-            Write
-          </button>
-          <button 
-            onClick={() => setPreviewMode(true)}
-            style={{ 
-              background: previewMode ? '#4299e1' : '#e2e8f0',
-              color: previewMode ? 'white' : '#4a5568'
-            }}
-          >
-            Preview
-          </button>
+      <div className="editor-container">
+        <div className="editor-header">
+          <div className="editor-stats">
+            <span className="stat-badge">📝 {wordCount} words</span>
+            <span className="stat-badge">⏱️ {readingTime} min read</span>
+            {formData.coverImagePreview && <span className="stat-badge">🖼️ Cover added</span>}
+          </div>
+          <div className="editor-tabs">
+            <button 
+              className={`editor-tab ${!previewMode ? 'active' : ''}`}
+              onClick={() => setPreviewMode(false)}
+            >
+              ✍️ Write
+            </button>
+            <button 
+              className={`editor-tab ${previewMode ? 'active' : ''}`}
+              onClick={() => setPreviewMode(true)}
+            >
+              👁️ Preview
+            </button>
+          </div>
         </div>
         
         {!previewMode ? (
-          <form onSubmit={handleSubmit}>
-            <h2>Write Your Story</h2>
-            
-            <div className="form-group">
-              <label>Title</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                required
-                placeholder="Give your post a compelling title..."
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Category</label>
-              <select name="category" value={formData.category} onChange={handleChange} required>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="form-group">
-              <label>Image</label>
-              <input 
-                type="file" 
-                onChange={handleImageChange} 
-                accept="image/*"
-                style={{ padding: '0.5rem' }}
-              />
-              {uploadStatus && (
-                <p style={{ fontSize: '0.875rem', color: '#48bb78', marginTop: '0.5rem' }}>
-                  ✓ {uploadStatus}
-                </p>
-              )}
-              {imagePreview && (
-                <div style={{ marginTop: '1rem' }}>
-                  <p style={{ fontSize: '0.875rem', color: '#4a5568', marginBottom: '0.5rem' }}>
-                    Preview:
-                  </p>
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    style={{ 
-                      maxWidth: '100%', 
-                      maxHeight: '200px', 
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0',
-                      objectFit: 'cover'
-                    }} 
-                  />
+          <form onSubmit={handleSubmit} className="editor-form">
+            {/* Cover Image Section */}
+            <div className="cover-image-section">
+              {formData.coverImagePreview ? (
+                <div className="cover-image-preview">
+                  <img src={formData.coverImagePreview} alt="Cover" />
+                  <button 
+                    type="button"
+                    className="remove-cover-btn"
+                    onClick={() => setFormData({ ...formData, coverImage: null, coverImagePreview: null })}
+                  >
+                    ✕ Remove Cover
+                  </button>
+                </div>
+              ) : (
+                <div className="cover-image-upload">
+                  <label className="upload-label">
+                    <span className="upload-icon">🖼️</span>
+                    <span>Add a stunning cover image</span>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleCoverImageChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <p className="cover-hint">Recommended: 1200x630px • This image will appear in the feed</p>
                 </div>
               )}
             </div>
             
-            <div className="form-group">
-              <label>Content (HTML Supported)</label>
-              <textarea
-                name="content"
-                value={formData.content}
-                onChange={handleChange}
+            {/* Title Section */}
+            <div className="title-section">
+              <input
+                type="text"
+                className="story-title-input"
+                value={formData.title}
+                onChange={handleTitleChange}
+                placeholder="Write a compelling title..."
                 required
-                rows="15"
-                placeholder="Write your content here. You can use HTML tags for formatting."
-                style={{ fontFamily: 'monospace' }}
               />
-              <small style={{ color: '#718096', display: 'block', marginTop: '0.5rem' }}>
-                💡 Tip: You can use HTML tags like &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, etc.
-              </small>
+              {titleError && <div className="title-error">{titleError}</div>}
             </div>
             
-            <button type="submit" disabled={loading}>
-              {loading ? 'Publishing...' : 'Publish Post ✨'}
-            </button>
+            {/* Rich Text Editor */}
+            <div className="editor-content-section">
+              <div className="rich-text-editor">
+                <ReactQuill
+                  ref={quillRef}
+                  theme="snow"
+                  value={formData.content}
+                  onChange={handleContentChange}
+                  modules={modules}
+                  formats={formats}
+                  placeholder="Start writing your story here... Use the toolbar to format text, add images, links, and more!"
+                />
+              </div>
+            </div>
+            
+            {/* Publish Button */}
+            <div className="publish-section">
+              <button type="submit" className="publish-btn" disabled={loading}>
+                {loading ? 'Publishing...' : '✨ Publish Story'}
+              </button>
+              <p className="publish-hint">Share your thoughts with the world • You'll earn 200 points for publishing</p>
+            </div>
           </form>
         ) : (
-          <div>
-            <h2>Preview: {formData.title || 'Untitled'}</h2>
-            {formData.category && (
-              <div className="post-category" style={{ marginBottom: '1rem' }}>{formData.category}</div>
-            )}
-            {imagePreview && (
-              <img 
-                src={imagePreview} 
-                alt="Preview" 
-                style={{ 
-                  maxWidth: '100%', 
-                  maxHeight: '300px', 
-                  borderRadius: '8px',
-                  marginBottom: '1rem',
-                  objectFit: 'cover'
-                }} 
-              />
-            )}
-            {formData.content ? (
-              <div className="preview-box">
+          <div className="preview-container">
+            <div className="story-preview">
+              {formData.coverImagePreview && (
+                <div className="preview-cover">
+                  <img src={formData.coverImagePreview} alt="Cover" />
+                </div>
+              )}
+              <h1 className="preview-title">{formData.title || 'Untitled Story'}</h1>
+              <div className="preview-meta">
+                <span className="preview-reading-time">{readingTime} min read</span>
+                <span className="preview-word-count">{wordCount} words</span>
+              </div>
+              {formData.content ? (
                 <div 
                   className="preview-content"
                   dangerouslySetInnerHTML={renderPreview()}
                 />
-              </div>
-            ) : (
-              <p style={{ color: '#718096', textAlign: 'center', padding: '2rem' }}>
-                Start writing to see preview...
-              </p>
-            )}
+              ) : (
+                <p className="empty-preview">Start writing to see preview...</p>
+              )}
+            </div>
           </div>
         )}
       </div>
