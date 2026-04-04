@@ -11,7 +11,6 @@ function Profile() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check if user is logged in
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
@@ -27,7 +26,6 @@ function Profile() {
       console.log('Profile data:', response.data);
       setProfile(response.data);
       
-      // Update user in localStorage with latest points
       const user = JSON.parse(localStorage.getItem('user'));
       if (user) {
         user.points = response.data.points;
@@ -63,38 +61,78 @@ function Profile() {
     window.location.reload();
   };
 
-  if (loading) return <div className="loading">Loading profile...</div>;
-  if (error) return <div className="error">{error}</div>;
-  if (!profile) return <div className="error">Profile not found</div>;
+  if (loading) {
+    return (
+      <div className="profile-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading your profile...</p>
+      </div>
+    );
+  }
+  
+  if (error) return <div className="profile-error">{error}</div>;
+  if (!profile) return <div className="profile-error">Profile not found</div>;
 
   return (
-    <div>
-      <div className="profile-header">
-        <h1>{profile.username}</h1>
-        <div className="stats">
-          <div className="stat">
-            <div className="stat-value">⭐ {profile.points}</div>
-            <div className="stat-label">Points</div>
+    <div className="profile-container">
+      {/* Profile Header Section */}
+      <div className="profile-cover">
+        <div className="profile-cover-gradient"></div>
+        <div className="profile-info-wrapper">
+          <div className="profile-avatar-large">
+            {profile.username?.charAt(0).toUpperCase()}
           </div>
-          <div className="stat">
-            <div className="stat-value">{profile.total_blogs}</div>
-            <div className="stat-label">Blogs Written</div>
+          <div className="profile-details">
+            <h1 className="profile-username">{profile.username}</h1>
+            <p className="profile-bio">Passionate writer sharing stories with the world</p>
+            <div className="profile-stats">
+              <div className="profile-stat">
+                <span className="stat-value-large">⭐ {profile.points}</span>
+                <span className="stat-label-large">Total Points</span>
+              </div>
+              <div className="profile-stat-divider"></div>
+              <div className="profile-stat">
+                <span className="stat-value-large">{profile.total_blogs}</span>
+                <span className="stat-label-large">Stories Written</span>
+              </div>
+            </div>
           </div>
-        </div>
-        <button onClick={handleLogout} className="logout-btn">Logout</button>
-      </div>
-      
-      <h2>Your Posts</h2>
-      {posts.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center' }}>
-          <p>You haven't written any posts yet.</p>
-          <button onClick={() => navigate('/create')} style={{ marginTop: '1rem' }}>
-            Write Your First Post
+          <button onClick={handleLogout} className="profile-logout-btn">
+            <span className="logout-icon">🚪</span>
+            <span>Logout</span>
           </button>
         </div>
-      ) : (
-        posts.map(post => <PostCard key={post._id} post={post} />)
-      )}
+      </div>
+
+      {/* Posts Section */}
+      <div className="profile-posts-section">
+        <div className="section-header">
+          <h2>
+            <span className="section-icon">📝</span>
+            Your Stories
+          </h2>
+          <span className="post-count">{posts.length} {posts.length === 1 ? 'story' : 'stories'}</span>
+        </div>
+        
+        {posts.length === 0 ? (
+          <div className="empty-posts-state">
+            <div className="empty-state-icon">✍️</div>
+            <h3>No stories yet</h3>
+            <p>Start your writing journey by creating your first story</p>
+            <button onClick={() => navigate('/create')} className="write-first-btn">
+              Write Your First Story
+            </button>
+          </div>
+        ) : (
+          <div className="profile-posts-grid">
+            {posts.map((post, index) => (
+              <div key={post._id} className="profile-post-item">
+                <PostCard post={post} index={index} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
