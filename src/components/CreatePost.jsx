@@ -82,6 +82,11 @@ function CreatePost() {
     setFormData({ ...formData, content: value });
   };
 
+  const handleContinue = () => {
+    setShowCelebration(false);
+    navigate('/');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.title.length < 3) {
@@ -94,9 +99,9 @@ function CreatePost() {
     const submitData = new FormData();
     submitData.append('title', formData.title);
     submitData.append('content', formData.content);
-    
     if (formData.coverImage) {
-      submitData.append('coverImage', formData.coverImage);
+      submitData.append('image', formData.coverImage);
+      console.log('Image attached:', formData.coverImage.name);
     }
     
     try {
@@ -111,10 +116,7 @@ function CreatePost() {
         localStorage.setItem('user', JSON.stringify(user));
       }
       
-      setTimeout(() => {
-        setShowCelebration(false);
-        navigate('/');
-      }, 3000);
+      // Don't auto-navigate, let user click Continue button
     } catch (err) {
       console.error('Failed to create post:', err);
       alert('Failed to create post. Please try again.');
@@ -141,7 +143,10 @@ function CreatePost() {
                 Total Points: {JSON.parse(localStorage.getItem('user'))?.points || 0}
               </div>
               <p>Your story is now live! Share it with the world 🌍</p>
-              <button onClick={() => setShowCelebration(false)}>Continue</button>
+              <button onClick={handleContinue} className="celebration-continue-btn">
+                <span>Continue to Feed</span>
+                <span className="btn-arrow">→</span>
+              </button>
             </div>
           </div>
         </>
