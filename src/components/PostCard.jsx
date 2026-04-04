@@ -4,12 +4,8 @@ import { useNavigate } from 'react-router-dom';
 function PostCard({ post, index }) {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
   
-  const getPreview = (content) => {
-    const strippedContent = content.replace(/<[^>]*>/g, '');
-    return strippedContent.substring(0, 180) + '...';
-  };
-
   const handleReadMore = () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -21,15 +17,32 @@ function PostCard({ post, index }) {
   };
 
   const getImageUrl = () => {
+    if (imgError) return null;
+    
+    // Check for image_base64 (from MongoDB)
     if (post.image_base64) {
       let mimeType = 'image/jpeg';
       if (post.image_filename) {
         const ext = post.image_filename.split('.').pop().toLowerCase();
         if (ext === 'png') mimeType = 'image/png';
         else if (ext === 'gif') mimeType = 'image/gif';
+        else if (ext === 'webp') mimeType = 'image/webp';
       }
       return `data:${mimeType};base64,${post.image_base64}`;
     }
+    
+    // Check for cover_image_base64
+    if (post.cover_image_base64) {
+      let mimeType = 'image/jpeg';
+      if (post.cover_image_filename) {
+        const ext = post.cover_image_filename.split('.').pop().toLowerCase();
+        if (ext === 'png') mimeType = 'image/png';
+        else if (ext === 'gif') mimeType = 'image/gif';
+        else if (ext === 'webp') mimeType = 'image/webp';
+      }
+      return `data:${mimeType};base64,${post.cover_image_base64}`;
+    }
+    
     return null;
   };
 
@@ -39,60 +52,63 @@ function PostCard({ post, index }) {
 
   return (
     <div 
-      className={`row-story-card ${isHovered ? 'hovered' : ''}`}
+      className={`story-card-expanded ${isHovered ? 'hovered' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{ animationDelay: `${index * 0.05}s` }}
     >
-      {imageUrl && (
-        <div className="row-card-image">
-          <img src={imageUrl} alt={post.title} />
-          <div className="image-effects">
-            <div className="reading-time-badge">
-              <span>{readingTime} min read</span>
-            </div>
+      {/* Cover Image Section */}
+      <div className="story-card-cover">
+        {imageUrl ? (
+          <img 
+            src={imageUrl} 
+            alt={post.title} 
+            className="story-cover-image"
+            onError={(e) => {
+              console.error('Image failed to load for:', post.title);
+              setImgError(true);
+              e.target.style.display = 'none';
+            }}
+            onLoad={() => console.log('Image loaded for:', post.title)}
+            loading="lazy"
+          />
+        ) : (
+          <div className="cover-placeholder">
+            <span>📷</span>
           </div>
+        )}
+        <div className="cover-overlay-info">
+          <span className="reading-time-large">{readingTime} min read</span>
         </div>
-      )}
+      </div>
       
-      <div className="row-card-content">
-        <div className="row-card-header">
-          <div className="author-section">
-            <div className="author-avatar">
+      {/* Content Section - No preview text, just title and author */}
+      <div className="story-card-details">
+        <div className="story-meta">
+          <div className="author-info">
+            <div className="author-avatar-story">
               {post.author_name?.charAt(0).toUpperCase()}
             </div>
-            <div className="author-details">
-              <span className="author-name-row">{post.author_name}</span>
-            </div>
+            <div className="author-name-story">{post.author_name}</div>
           </div>
-          <div className="post-meta">
-            <span className="post-date-badge">
-              {daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`}
-            </span>
-            {post.category && (
-              <span className="category-chip">{post.category}</span>
-            )}
+          <div className="story-date">
+            {daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`}
           </div>
         </div>
         
-        <h3 className="row-card-title">{post.title}</h3>
-        <p className="row-card-excerpt">{getPreview(post.content)}</p>
+        <h3 className="story-title-expanded">{post.title}</h3>
         
-        <div className="row-card-footer">
-          <div className="engagement-stats">
-            <div className="stat-group">
-              <span className="stat-icon">❤️</span>
-              <span>{post.likes || 0}</span>
-            </div>
-            <div className="stat-group">
-              <span className="stat-icon">💬</span>
-              <span>{post.comments?.length || 0}</span>
-            </div>
+        {/* No content preview here - removed completely */}
+        
+        <div className="story-footer">
+          <div className="story-stats">
+            <span className="story-stat">❤️ {post.likes || 0}</span>
+            <span className="story-stat">💬 {post.comments?.length || 0}</span>
           </div>
           
-          <button onClick={handleReadMore} className="read-btn">
-            <span>Read Story</span>
-            <svg className="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button onClick={handleReadMore} className="story-read-btn">
+            Read Story
+            <svg className="read-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </button>
