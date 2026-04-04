@@ -1511,3 +1511,145 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
+/* ============================================
+   PUBLIC NAVBAR (When Logged Out) - Modern Styled
+   ============================================ */
+.public-navbar-modern {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: white;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.public-navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.8rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo Styles */
+.public-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.public-logo:hover {
+  transform: translateY(-2px);
+}
+
+.public-logo-icon {
+  font-size: 1.8rem;
+  transition: transform 0.3s ease;
+}
+
+.public-logo:hover .public-logo-icon {
+  transform: scale(1.05);
+}
+
+.public-logo-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
+}
+
+/* Navigation Links */
+.public-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.public-nav-link {
+  padding: 0.6rem 1.2rem;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Home Link */
+.public-nav-link:first-child {
+  color: #475569;
+}
+
+.public-nav-link:first-child:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+  transform: translateY(-1px);
+}
+
+/* Login Button */
+.public-nav-link.login-link {
+  color: #4f46e5;
+  border: 1.5px solid #e2e8f0;
+  background: white;
+}
+
+.public-nav-link.login-link:hover {
+  background: #eef2ff;
+  border-color: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+}
+
+/* Sign Up Button */
+.public-nav-link.signup-link {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+}
+
+.public-nav-link.signup-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* Responsive Design for Public Navbar */
+@media (max-width: 768px) {
+  .public-navbar-container {
+    padding: 0.7rem 1.5rem;
+  }
+  
+  .public-logo-text {
+    font-size: 1rem;
+  }
+  
+  .public-logo-icon {
+    font-size: 1.5rem;
+  }
+  
+  .public-nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .public-navbar-container {
+    padding: 0.6rem 1rem;
+  }
+  
+  .public-logo-text {
+    display: none;
+  }
+  
+  .public-nav-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
