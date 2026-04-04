@@ -145,115 +145,165 @@ function FullPost() {
 
   if (authError) {
     return (
-      <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-        <h2>🔒 Authentication Required</h2>
-        <p style={{ margin: '1rem 0', color: '#718096' }}>
-          Please sign in to read full posts and interact with the community.
-        </p>
-        <div className="modal-auth-buttons" style={{ justifyContent: 'center' }}>
-          <button onClick={() => navigate('/login')} className="login-btn">
-            Login
-          </button>
-          <button onClick={() => navigate('/signup')} className="signup-btn">
-            Sign Up
+      <div className="auth-error-container">
+        <div className="auth-error-card">
+          <div className="auth-error-icon">🔒</div>
+          <h2>Authentication Required</h2>
+          <p>Please sign in to read full posts and interact with the community.</p>
+          <button onClick={handleLoginRedirect} className="auth-signin-btn">
+            Sign In
           </button>
         </div>
       </div>
     );
   }
 
-  if (loading) return <div className="loading">Loading thoughtful content...</div>;
-  if (!post) return <div className="error">Post not found</div>;
+  if (loading) {
+    return (
+      <div className="post-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading story...</p>
+      </div>
+    );
+  }
+  
+  if (!post) return <div className="error-container">Post not found</div>;
 
   const imageUrl = getImageUrl();
 
   return (
-    <article className="full-post">
-      <h1>{post.title}</h1>
-      <div className="post-category" style={{ marginBottom: '0.5rem' }}>{post.category}</div>
-      <div className="meta">
-        By {post.author_name} • {new Date(post.created_at).toLocaleDateString()}
-        {post.likes > 0 && ` • ❤️ ${post.likes} likes`}
-      </div>
-      
-      {imageUrl && (
-        <div className="post-image-container">
-          <img 
-            src={imageUrl} 
-            alt={post.title} 
-            className="post-image"
-            onError={(e) => {
-              console.error('Image failed to load');
-              e.target.style.display = 'none';
-            }}
-          />
-        </div>
-      )}
-      
-      <div 
-        ref={contentRef}
-        className="content" 
-        dangerouslySetInnerHTML={renderContent(post.content)}
-      />
-      
-      <div style={{ 
-        height: '3px', 
-        background: '#e2e8f0', 
-        margin: '1rem 0',
-        borderRadius: '3px',
-        overflow: 'hidden'
-      }}>
-        <div style={{ 
-          width: `${scrollPercentage}%`, 
-          height: '100%', 
-          background: '#4299e1',
-          transition: 'width 0.3s'
-        }} />
-      </div>
-      <p style={{ fontSize: '0.75rem', color: '#718096', textAlign: 'center' }}>
-        Scroll progress: {Math.round(scrollPercentage)}% {scrollPercentage >= 60 ? '✓ Like unlocked!' : '(60% to unlock like)'}
-      </p>
-      
-      {showUnlock && (
-        <div className="unlock-message">
-          🎉 You've unlocked interaction! You can now like this post.
-        </div>
-      )}
-      
-      <button 
-        onClick={handleLike} 
-        className={`like-button ${likeEnabled && !liked ? 'active' : ''}`}
-        disabled={!likeEnabled || liked || likeLoading}
-        style={{
-          background: liked ? '#f56565' : (likeEnabled ? '#f56565' : '#e2e8f0'),
-          color: (liked || likeEnabled) ? 'white' : '#a0aec0',
-          cursor: (!likeEnabled || liked || likeLoading) ? 'not-allowed' : 'pointer',
-          opacity: likeLoading ? 0.7 : 1
-        }}
-      >
-        {likeLoading ? '⏳ Processing...' : (liked ? '❤️ Liked!' : (likeEnabled ? '❤️ Like' : '🔒 Scroll to Like'))}
-      </button>
-      
-      <div className="comments-section">
-        <h3>Comments ({post.comments?.length || 0})</h3>
-        <form onSubmit={handleComment} className="comment-form">
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Share your thoughts..."
-            rows="3"
-          />
-          <button type="submit">Add Comment</button>
-        </form>
-        
-        <div className="comments-list">
-          {post.comments?.map((comment, idx) => (
-            <div key={idx} className="comment">
-              <div className="comment-author">{comment.username}</div>
-              <div className="comment-text">{comment.text}</div>
-              <small>{new Date(comment.created_at).toLocaleString()}</small>
+    <article className="full-post-modern">
+      {/* Hero Section with Cover Image */}
+      <div className="post-hero">
+        {imageUrl && (
+          <div className="post-cover-image">
+            <img src={imageUrl} alt={post.title} />
+            <div className="cover-overlay"></div>
+          </div>
+        )}
+        <div className="post-header-content">
+          <div className="post-category-badge">{post.category}</div>
+          <h1 className="post-title-modern">{post.title}</h1>
+          <div className="post-author-info">
+            <div className="author-avatar-large">
+              {post.author_name?.charAt(0).toUpperCase()}
             </div>
-          ))}
+            <div className="author-details">
+              <span className="author-name-large">{post.author_name}</span>
+              <span className="post-date-large">
+                {new Date(post.created_at).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Section */}
+      <div className="post-content-wrapper">
+        <div 
+          ref={contentRef}
+          className="post-content-modern" 
+          dangerouslySetInnerHTML={renderContent(post.content)}
+        />
+
+        {/* Reading Progress Bar */}
+        <div className="reading-progress-container">
+          <div className="progress-info">
+            <span className="progress-label">Reading progress</span>
+            <span className="progress-percentage">{Math.round(scrollPercentage)}%</span>
+          </div>
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${scrollPercentage}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Like Section */}
+        <div className="like-section">
+          {showUnlock && (
+            <div className="unlock-notification">
+              <span className="unlock-icon">🎉</span>
+              <span>You've unlocked interaction! You can now like this post.</span>
+            </div>
+          )}
+          
+          <div className="like-container">
+            <button 
+              onClick={handleLike} 
+              className={`like-btn-modern ${liked ? 'liked' : ''} ${likeEnabled && !liked ? 'enabled' : ''}`}
+              disabled={!likeEnabled || liked || likeLoading}
+            >
+              <div className="like-icon">
+                {liked ? '❤️' : (likeEnabled ? '🤍' : '🔒')}
+              </div>
+              <span className="like-count">
+                {post.likes || 0} {post.likes === 1 ? 'like' : 'likes'}
+              </span>
+              {!likeEnabled && !liked && (
+                <span className="like-hint">Scroll to unlock</span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Comments Section */}
+        <div className="comments-section-modern">
+          <div className="comments-header">
+            <h3>
+              <span className="comments-icon">💬</span>
+              Comments ({post.comments?.length || 0})
+            </h3>
+          </div>
+          
+          <form onSubmit={handleComment} className="comment-form-modern">
+            <div className="comment-input-wrapper">
+              <div className="comment-avatar-small">
+                {JSON.parse(localStorage.getItem('user'))?.username?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share your thoughts..."
+                rows="3"
+                className="comment-input"
+              />
+            </div>
+            <button type="submit" className="submit-comment-btn" disabled={!comment.trim()}>
+              Post Comment
+            </button>
+          </form>
+          
+          <div className="comments-list-modern">
+            {post.comments?.length === 0 ? (
+              <div className="no-comments">
+                <span>💭</span>
+                <p>No comments yet. Be the first to share your thoughts!</p>
+              </div>
+            ) : (
+              post.comments.map((comment, idx) => (
+                <div key={idx} className="comment-card">
+                  <div className="comment-avatar">
+                    {comment.username?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="comment-content">
+                    <div className="comment-header">
+                      <span className="comment-author-name">{comment.username}</span>
+                      <span className="comment-date">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="comment-text">{comment.text}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </article>
