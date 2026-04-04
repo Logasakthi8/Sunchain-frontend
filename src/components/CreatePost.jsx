@@ -12,7 +12,7 @@ function CreatePost() {
     content: '',
     coverImage: null,
     coverImagePreview: null
-  });
+  }); 
   const [showCelebration, setShowCelebration] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
   const [loading, setLoading] = useState(false);
