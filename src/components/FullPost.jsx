@@ -15,6 +15,7 @@ function FullPost() {
   const [authError, setAuthError] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [scrollPercentage, setScrollPercentage] = useState(0);
+  const [expandedImage, setExpandedImage] = useState(null);
   const contentRef = useRef(null);
   const { ref, inView } = useInView({ threshold: 0.6 });
 
@@ -128,9 +129,29 @@ function FullPost() {
     navigate('/login');
   };
 
+  // Process content to make images responsive and clickable
   const renderContent = (content) => {
-    return { __html: content };
+    // Add container div and make images clickable
+    let modifiedContent = content;
+    
+    // Wrap each image with a container and add click handler
+    modifiedContent = modifiedContent.replace(
+      /<img([^>]*)>/g, 
+      '<div class="content-image-wrapper"><img$1 class="content-image" /><button class="image-expand-btn" onclick="window.dispatchEvent(new CustomEvent(\'expandImage\', {detail: this.previousElementSibling.src}))">🔍</button></div>'
+    );
+    
+    return { __html: modifiedContent };
   };
+
+  // Handle image expansion
+  useEffect(() => {
+    const handleExpandImage = (e) => {
+      setExpandedImage(e.detail);
+    };
+    
+    window.addEventListener('expandImage', handleExpandImage);
+    return () => window.removeEventListener('expandImage', handleExpandImage);
+  }, []);
 
   const getImageUrl = () => {
     if (post && post.image_base64) {
@@ -141,6 +162,14 @@ function FullPost() {
       return `data:${mimeType};base64,${post.image_base64}`;
     }
     return null;
+  };
+
+  const openImageModal = (src) => {
+    setExpandedImage(src);
+  };
+
+  const closeImageModal = () => {
+    setExpandedImage(null);
   };
 
   if (authError) {
@@ -172,141 +201,161 @@ function FullPost() {
   const imageUrl = getImageUrl();
 
   return (
-    <article className="full-post-modern">
-      {/* Hero Section with Cover Image */}
-      <div className="post-hero">
-        {imageUrl && (
-          <div className="post-cover-image">
-            <img src={imageUrl} alt={post.title} />
-            <div className="cover-overlay"></div>
-          </div>
-        )}
-        <div className="post-header-content">
-          <div className="post-category-badge">{post.category}</div>
-          <h1 className="post-title-modern">{post.title}</h1>
-          <div className="post-author-info">
-            <div className="author-avatar-large">
-              {post.author_name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="author-details">
-              <span className="author-name-large">{post.author_name}</span>
-              <span className="post-date-large">
-                {new Date(post.created_at).toLocaleDateString('en-US', { 
-                  month: 'long', 
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </span>
-            </div>
+    <>
+      {/* Image Modal for Expanded View */}
+      {expandedImage && (
+        <div className="image-modal-overlay" onClick={closeImageModal}>
+          <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+            <img src={expandedImage} alt="Expanded view" />
+            <button className="image-modal-close" onClick={closeImageModal}>✕</button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Content Section */}
-      <div className="post-content-wrapper">
-        <div 
-          ref={contentRef}
-          className="post-content-modern" 
-          dangerouslySetInnerHTML={renderContent(post.content)}
-        />
-
-        {/* Reading Progress Bar */}
-        <div className="reading-progress-container">
-          <div className="progress-info">
-            <span className="progress-label">Reading progress</span>
-            <span className="progress-percentage">{Math.round(scrollPercentage)}%</span>
-          </div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${scrollPercentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Like Section */}
-        <div className="like-section">
-          {showUnlock && (
-            <div className="unlock-notification">
-              <span className="unlock-icon">🎉</span>
-              <span>You've unlocked interaction! You can now like this post.</span>
+      <article className="full-post-modern">
+        {/* Hero Section with Cover Image */}
+        <div className="post-hero">
+          {imageUrl && (
+            <div className="post-cover-image-container">
+              <img 
+                src={imageUrl} 
+                alt={post.title} 
+                className="post-cover-image"
+                onClick={() => openImageModal(imageUrl)}
+              />
+              <div className="cover-overlay"></div>
+              <button className="expand-image-btn" onClick={() => openImageModal(imageUrl)}>
+                🔍
+              </button>
             </div>
           )}
-          
-          <div className="like-container">
-            <button 
-              onClick={handleLike} 
-              className={`like-btn-modern ${liked ? 'liked' : ''} ${likeEnabled && !liked ? 'enabled' : ''}`}
-              disabled={!likeEnabled || liked || likeLoading}
-            >
-              <div className="like-icon">
-                {liked ? '❤️' : (likeEnabled ? '🤍' : '🔒')}
+          <div className="post-header-content">
+            <div className="post-category-badge">{post.category}</div>
+            <h1 className="post-title-modern">{post.title}</h1>
+            <div className="post-author-info">
+              <div className="author-avatar-large">
+                {post.author_name?.charAt(0).toUpperCase()}
               </div>
-              <span className="like-count">
-                {post.likes || 0} {post.likes === 1 ? 'like' : 'likes'}
-              </span>
-              {!likeEnabled && !liked && (
-                <span className="like-hint">Scroll to unlock</span>
-              )}
-            </button>
+              <div className="author-details">
+                <span className="author-name-large">{post.author_name}</span>
+                <span className="post-date-large">
+                  {new Date(post.created_at).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Comments Section */}
-        <div className="comments-section-modern">
-          <div className="comments-header">
-            <h3>
-              <span className="comments-icon">💬</span>
-              Comments ({post.comments?.length || 0})
-            </h3>
-          </div>
-          
-          <form onSubmit={handleComment} className="comment-form-modern">
-            <div className="comment-input-wrapper">
-              <div className="comment-avatar-small">
-                {JSON.parse(localStorage.getItem('user'))?.username?.charAt(0).toUpperCase() || 'U'}
-              </div>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share your thoughts..."
-                rows="3"
-                className="comment-input"
+        {/* Content Section with Proper Image Containment */}
+        <div className="post-content-wrapper">
+          <div 
+            ref={contentRef}
+            className="post-content-modern" 
+            dangerouslySetInnerHTML={renderContent(post.content)}
+          />
+
+          {/* Reading Progress Bar */}
+          <div className="reading-progress-container">
+            <div className="progress-info">
+              <span className="progress-label">Reading progress</span>
+              <span className="progress-percentage">{Math.round(scrollPercentage)}%</span>
+            </div>
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${scrollPercentage}%` }}
               />
             </div>
-            <button type="submit" className="submit-comment-btn" disabled={!comment.trim()}>
-              Post Comment
-            </button>
-          </form>
-          
-          <div className="comments-list-modern">
-            {post.comments?.length === 0 ? (
-              <div className="no-comments">
-                <span>💭</span>
-                <p>No comments yet. Be the first to share your thoughts!</p>
+          </div>
+
+          {/* Like Section */}
+          <div className="like-section">
+            {showUnlock && (
+              <div className="unlock-notification">
+                <span className="unlock-icon">🎉</span>
+                <span>You've unlocked interaction! You can now like this post.</span>
               </div>
-            ) : (
-              post.comments.map((comment, idx) => (
-                <div key={idx} className="comment-card">
-                  <div className="comment-avatar">
-                    {comment.username?.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="comment-content">
-                    <div className="comment-header">
-                      <span className="comment-author-name">{comment.username}</span>
-                      <span className="comment-date">
-                        {new Date(comment.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="comment-text">{comment.text}</p>
-                  </div>
-                </div>
-              ))
             )}
+            
+            <div className="like-container">
+              <button 
+                onClick={handleLike} 
+                className={`like-btn-modern ${liked ? 'liked' : ''} ${likeEnabled && !liked ? 'enabled' : ''}`}
+                disabled={!likeEnabled || liked || likeLoading}
+              >
+                <div className="like-icon">
+                  {liked ? '❤️' : (likeEnabled ? '🤍' : '🔒')}
+                </div>
+                <span className="like-count">
+                  {post.likes || 0} {post.likes === 1 ? 'like' : 'likes'}
+                </span>
+                {!likeEnabled && !liked && (
+                  <span className="like-hint">Scroll to unlock</span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Comments Section */}
+          <div className="comments-section-modern">
+            <div className="comments-header">
+              <h3>
+                <span className="comments-icon">💬</span>
+                Comments ({post.comments?.length || 0})
+              </h3>
+            </div>
+            
+            <form onSubmit={handleComment} className="comment-form-modern">
+              <div className="comment-input-wrapper">
+                <div className="comment-avatar-small">
+                  {JSON.parse(localStorage.getItem('user'))?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Share your thoughts..."
+                  rows="3"
+                  className="comment-input"
+                />
+              </div>
+              <button type="submit" className="submit-comment-btn" disabled={!comment.trim()}>
+                Post Comment
+              </button>
+            </form>
+            
+            <div className="comments-list-modern">
+              {post.comments?.length === 0 ? (
+                <div className="no-comments">
+                  <span>💭</span>
+                  <p>No comments yet. Be the first to share your thoughts!</p>
+                </div>
+              ) : (
+                post.comments.map((comment, idx) => (
+                  <div key={idx} className="comment-card">
+                    <div className="comment-avatar">
+                      {comment.username?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="comment-content">
+                      <div className="comment-header">
+                        <span className="comment-author-name">{comment.username}</span>
+                        <span className="comment-date">
+                          {new Date(comment.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="comment-text">{comment.text}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </>
   );
 }
 
