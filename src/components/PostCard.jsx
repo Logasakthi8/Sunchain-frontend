@@ -1,39 +1,25 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function PostCard({ post }) {
+function PostCard({ post, index }) {
   const navigate = useNavigate();
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   
   const getPreview = (content) => {
-    // Strip HTML tags for preview
     const strippedContent = content.replace(/<[^>]*>/g, '');
-    const lines = strippedContent.split('\n').slice(0, 4);
-    return lines.join('\n');
+    return strippedContent.substring(0, 180) + '...';
   };
 
   const handleReadMore = () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      setShowLoginPrompt(true);
+      const confirmLogin = window.confirm('Please sign in to read full posts. Would you like to login now?');
+      if (confirmLogin) navigate('/login');
     } else {
       navigate(`/post/${post._id}`);
     }
   };
 
-  const handleClosePrompt = () => {
-    setShowLoginPrompt(false);
-  };
-
-  const handleLogin = () => {
-    navigate('/login');
-  };
-
-  const handleSignup = () => {
-    navigate('/signup');
-  };
-
-  // Get image from base64 data
   const getImageUrl = () => {
     if (post.image_base64) {
       let mimeType = 'image/jpeg';
@@ -41,7 +27,6 @@ function PostCard({ post }) {
         const ext = post.image_filename.split('.').pop().toLowerCase();
         if (ext === 'png') mimeType = 'image/png';
         else if (ext === 'gif') mimeType = 'image/gif';
-        else if (ext === 'webp') mimeType = 'image/webp';
       }
       return `data:${mimeType};base64,${post.image_base64}`;
     }
@@ -49,63 +34,71 @@ function PostCard({ post }) {
   };
 
   const imageUrl = getImageUrl();
+  const readingTime = Math.ceil(post.content.replace(/<[^>]*>/g, '').split(' ').length / 200);
+  const daysAgo = Math.floor((new Date() - new Date(post.created_at)) / (1000 * 60 * 60 * 24));
 
   return (
-    <>
-      {/* Login/Signup Prompt Modal */}
-      {showLoginPrompt && (
-        <div className="modal-overlay">
-          <div className="modal-auth-content">
-            <h3>🔐 Authentication Required</h3>
-            <p>Please sign in or create an account to read full posts and interact with the community.</p>
-            <div className="modal-auth-buttons">
-              <button onClick={handleLogin} className="login-btn">
-                Login
-              </button>
-              <button onClick={handleSignup} className="signup-btn">
-                Sign Up
-              </button>
-              <button onClick={handleClosePrompt} className="cancel-btn">
-                Cancel
-              </button>
+    <div 
+      className={`row-story-card ${isHovered ? 'hovered' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ animationDelay: `${index * 0.05}s` }}
+    >
+      {imageUrl && (
+        <div className="row-card-image">
+          <img src={imageUrl} alt={post.title} />
+          <div className="image-effects">
+            <div className="reading-time-badge">
+              <span>{readingTime} min read</span>
             </div>
           </div>
         </div>
       )}
-
-      <div className="card">
-        <div className="post-author">By {post.author_name}</div>
-        <h2 className="post-title">{post.title}</h2>
-        <div className="post-category">{post.category}</div>
-        {imageUrl && (
-          <div className="post-image-container">
-            <img 
-              src={imageUrl} 
-              alt={post.title} 
-              className="post-image"
-              onError={(e) => {
-                console.error('Image failed to load for post:', post._id);
-                e.target.style.display = 'none';
-              }}
-            />
+      
+      <div className="row-card-content">
+        <div className="row-card-header">
+          <div className="author-section">
+            <div className="author-avatar">
+              {post.author_name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="author-details">
+              <span className="author-name-row">{post.author_name}</span>
+            </div>
           </div>
-        )}
-        <div className="post-preview">{getPreview(post.content)}</div>
-        <button 
-          onClick={handleReadMore} 
-          className="read-more"
-          style={{
-            background: 'none',
-            color: '#4299e1',
-            padding: '0.5rem 0',
-            fontSize: '0.95rem',
-            fontWeight: '600'
-          }}
-        >
-          Read More →
-        </button>
+          <div className="post-meta">
+            <span className="post-date-badge">
+              {daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`}
+            </span>
+            {post.category && (
+              <span className="category-chip">{post.category}</span>
+            )}
+          </div>
+        </div>
+        
+        <h3 className="row-card-title">{post.title}</h3>
+        <p className="row-card-excerpt">{getPreview(post.content)}</p>
+        
+        <div className="row-card-footer">
+          <div className="engagement-stats">
+            <div className="stat-group">
+              <span className="stat-icon">❤️</span>
+              <span>{post.likes || 0}</span>
+            </div>
+            <div className="stat-group">
+              <span className="stat-icon">💬</span>
+              <span>{post.comments?.length || 0}</span>
+            </div>
+          </div>
+          
+          <button onClick={handleReadMore} className="read-btn">
+            <span>Read Story</span>
+            <svg className="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
