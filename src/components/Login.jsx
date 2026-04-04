@@ -21,13 +21,10 @@ function Login() {
       const response = await login(formData);
       console.log('Login response:', response.data);
       
-      // Store token and user data
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
-      // Navigate to home page
       navigate('/');
-      // Force reload to refresh navbar
       window.location.reload();
     } catch (err) {
       console.error('Login error:', err);
@@ -38,45 +35,115 @@ function Login() {
   };
 
   return (
-    <div className="card" style={{ maxWidth: '400px', margin: '2rem auto' }}>
-      <h2>Welcome Back</h2>
-      <p style={{ color: '#718096', marginBottom: '1.5rem' }}>Sign in to continue your journey</p>
-      
-      {error && <div className="error">{error}</div>}
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            placeholder="Enter your email"
-          />
+    <div className="auth-container">
+      <div className="auth-card">
+        {/* Left Side - Illustration with Motivational Content */}
+        <div className="auth-illustration">
+          <div className="illustration-content">
+            <div className="illustration-icon">📚</div>
+            <h2>Welcome Back</h2>
+            <h3>Continue Your Journey</h3>
+            <p>Every story you share creates ripples of change</p>
+
+            <div className="motivation-quote">
+              <div className="quote-mark">"</div>
+              <p>The stories you share today could change someone's tomorrow. Keep writing, keep inspiring.</p>
+            </div>
+
+            <div className="illustration-features">
+              <div className="feature">
+                <span>📖</span>
+                <span>Read Stories</span>
+              </div>
+              <div className="feature">
+                <span>✍️</span>
+                <span>Write Articles</span>
+              </div>
+              <div className="feature">
+                <span>💬</span>
+                <span>Engage Community</span>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            placeholder="Enter your password"
-          />
+
+        {/* Right Side - Form */}
+        <div className="auth-form">
+          <div className="form-header">
+            <h2>Sign In</h2>
+            <p>Welcome back to Mindful Blog</p>
+          </div>
+
+          {error && (
+            <div className="auth-error">
+              <span className="error-icon">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-form-fields">
+            <div className="input-group">
+              <label>
+                <span className="input-icon">📧</span>
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="Enter your email"
+                className="auth-input"
+              />
+            </div>
+
+            <div className="input-group">
+              <label>
+                <span className="input-icon">🔒</span>
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="Enter your password"
+                className="auth-input"
+              />
+            </div>
+
+            <div className="form-options">
+              <label className="remember-me">
+                <input type="checkbox" /> Remember me
+              </label>
+              <Link to="/forgot-password" className="forgot-link">Forgot password?</Link>
+            </div>
+
+            <button type="submit" disabled={loading} className="auth-submit-btn">
+              {loading ? (
+                <>
+                  <span className="spinner-small"></span>
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+
+          <div className="auth-footer">
+            <p>
+              Don't have an account? <Link to="/signup" className="auth-link">Create one</Link>
+            </p>
+          </div>
+          
+          <div className="auth-motivation-message">
+            <p>✨ Your story matters. Share it with the world.</p>
+          </div>
         </div>
-        
-        <button type="submit" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign In'}
-        </button>
-      </form>
-      
-      <p style={{ marginTop: '1rem', textAlign: 'center' }}>
-        Don't have an account? <Link to="/signup">Sign up</Link>
-      </p>
+      </div>
     </div>
   );
 }
