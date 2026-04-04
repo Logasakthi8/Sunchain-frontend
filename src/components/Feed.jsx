@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getPosts } from '../api';
+import { getPosts } from '../api'; 
 import PostCard from './PostCard';
 
 function Feed() {
