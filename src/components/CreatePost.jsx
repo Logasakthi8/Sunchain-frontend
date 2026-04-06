@@ -100,7 +100,7 @@ function CreatePost() {
     submitData.append('title', formData.title);
     submitData.append('content', formData.content);
     if (formData.coverImage) {
-      submitData.append('coverImage', formData.coverImage);
+      submitData.append('image', formData.coverImage);
       console.log('Image attached:', formData.coverImage.name);
     }
     
@@ -116,7 +116,6 @@ function CreatePost() {
         localStorage.setItem('user', JSON.stringify(user));
       }
       
-      // Don't auto-navigate, let user click Continue button
     } catch (err) {
       console.error('Failed to create post:', err);
       alert('Failed to create post. Please try again.');
