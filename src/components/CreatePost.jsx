@@ -100,7 +100,7 @@ function CreatePost() {
     submitData.append('title', formData.title);
     submitData.append('content', formData.content);
     if (formData.coverImage) {
-      submitData.append('image', formData.coverImage);
+      submitData.append('coverImage', formData.coverImage);
       console.log('Image attached:', formData.coverImage.name);
     }
     
