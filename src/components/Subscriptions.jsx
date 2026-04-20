@@ -43,7 +43,7 @@ function Subscriptions() {
   return (
     <div className="subscriptions-page">
       <div className="subscriptions-header">
-        <h1>Your Subscriptions</h1>
+        <h1>📡 Your Subscriptions</h1>
         <p>Channels you're following</p>
       </div>
 
