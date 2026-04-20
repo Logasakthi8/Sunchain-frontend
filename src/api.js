@@ -1,43 +1,58 @@
 import axios from 'axios';
 
-const API_URL = 'https://sunchain-backend1-2.onrender.com/api';
+const API_URL = 'https://sunchain-backend1-2.onrender.com/api';;
 
 const api = axios.create({
   baseURL: API_URL,
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Add response interceptor for better error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Clear invalid token
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+// Add token to all requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );
 
+// Auth
 export const signup = (userData) => api.post('/signup', userData);
 export const login = (userData) => api.post('/login', userData);
+
+// Channels
+export const createChannel = (formData) => {
+  return api.post('/channel', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  });
+};
+
+export const getChannel = (id) => api.get(`/channel/${id}`);
+export const getMyChannel = () => api.get('/channel/my');
+export const subscribeToChannel = (channelId) => api.post(`/channel/${channelId}/subscribe`);
+export const getUserSubscriptions = () => api.get('/user/subscriptions');
+export const getSubscribedChannels = () => api.get('/subscriptions'); // Alternative name
+
+// Posts
 export const getPosts = () => api.get('/posts');
 export const getPost = (id) => api.get(`/posts/${id}`);
-export const createPost = (formData) => api.post('/posts', formData, {
-  headers: { 'Content-Type': 'multipart/form-data' }
-});
+export const createPost = (formData) => {
+  return api.post('/posts', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  });
+};
 export const likePost = (id) => api.post(`/posts/${id}/like`);
 export const addComment = (id, comment) => api.post(`/posts/${id}/comment`, { text: comment });
-export const getUserPosts = () => api.get('/user/posts');
-export const getProfile = () => api.get('/user/profile');
+
+// Profile
+export const getProfile = () => api.get('/profile');
 
 export default api;
