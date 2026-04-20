@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://sunchain-backend1-2.onrender.com/api';
+const API_URL = 'http://127.0.0.1:5001/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -54,5 +54,6 @@ export const addComment = (id, comment) => api.post(`/posts/${id}/comment`, { te
 
 // Profile
 export const getProfile = () => api.get('/profile');
+export const getUserPosts = () => api.get('/user/posts');
 
 export default api;
