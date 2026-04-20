@@ -4,7 +4,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [points, setPoints] = useState(0);
   const [user, setUser] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -13,7 +12,6 @@ function Navbar() {
     if (userData) {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
-      setPoints(parsedUser.points || 0);
     }
   }, []);
 
@@ -24,69 +22,44 @@ function Navbar() {
     window.location.reload();
   };
 
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
-
-  if (!user) return null;
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="navbar-modern">
-      <div className="navbar-container-modern">
-        {/* Logo Section */}
-        <Link to="/" className="logo-modern">
-          <div className="logo-icon">📝</div>
-          <div className="logo-text">
-            <span className="logo-main">Sunchain</span>
-           
-          </div>
+    <nav className="navbar-sunchain">
+      <div className="navbar-container-sunchain">
+        <Link to="/" className="logo-sunchain">
+          <span className="logo-icon"></span>
+          <span className="logo-text">Sunchain</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="nav-links-modern">
-          <Link 
-            to="/" 
-            className={`nav-link ${isActive('/') ? 'active' : ''}`}
-          >
-            <span className="nav-icon">🏠</span>
-            <span>  Stories</span>
+        <div className="nav-links-sunchain">
+          <Link to="/" className={`nav-link-sunchain ${isActive('/') ? 'active' : ''}`}>
+            <span className="nav-icon">📝</span>
+            <span>Stories</span>
           </Link>
           
-          <Link 
-            to="/create" 
-            className={`nav-link ${isActive('/create') ? 'active' : ''}`}
-          >
+          <Link to="/subscriptions" className={`nav-link-sunchain ${isActive('/subscriptions') ? 'active' : ''}`}>
+            <span className="nav-icon">🔔</span>
+            <span>Subscriptions</span>
+          </Link>
+          
+          <Link to="/create" className={`nav-link-sunchain ${isActive('/create') ? 'active' : ''}`}>
             <span className="nav-icon">✍️</span>
             <span>Write</span>
           </Link>
           
-          <Link 
-            to="/profile" 
-            className={`nav-link ${isActive('/profile') ? 'active' : ''}`}
-          >
+          <Link to="/profile" className={`nav-link-sunchain ${isActive('/profile') ? 'active' : ''}`}>
             <span className="nav-icon">👤</span>
             <span>Profile</span>
           </Link>
 
-          {/* Points Badge */}
-          <div className="points-badge-modern">
-            <span className="points-icon">⭐</span>
-            <span className="points-value">{points}</span>
-            <span className="points-label">pts</span>
-          </div>
-
-          {/* Logout Button */}
-          <button onClick={handleLogout} className="logout-btn-modern">
+          <button onClick={handleLogout} className="logout-btn-sunchain">
             <span className="logout-icon">🚪</span>
             <span>Logout</span>
           </button>
         </div>
 
-        {/* Mobile Menu Button */}
-        <button 
-          className="mobile-menu-btn"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
+        <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
             <span></span>
             <span></span>
@@ -95,45 +68,20 @@ function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Navigation */}
-      <div className={`mobile-nav ${isMobileMenuOpen ? 'open' : ''}`}>
-        <Link 
-          to="/" 
-          className={`mobile-nav-link ${isActive('/') ? 'active' : ''}`}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <span className="nav-icon">🏠</span>
-          <span>Feed</span>
+      <div className={`mobile-nav-sunchain ${isMobileMenuOpen ? 'open' : ''}`}>
+        <Link to="/" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
+          <span>📝</span> Stories
         </Link>
-        
-        <Link 
-          to="/create" 
-          className={`mobile-nav-link ${isActive('/create') ? 'active' : ''}`}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <span className="nav-icon">✍️</span>
-          <span>Write</span>
+        <Link to="/subscriptions" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
+          <span>🔔</span> Subscriptions
         </Link>
-        
-        <Link 
-          to="/profile" 
-          className={`mobile-nav-link ${isActive('/profile') ? 'active' : ''}`}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <span className="nav-icon">👤</span>
-          <span>Profile</span>
+        <Link to="/create" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
+          <span>✍️</span> Write
         </Link>
-
-        <div className="mobile-points">
-          <span className="points-icon">⭐</span>
-          <span className="points-value">{points}</span>
-          <span className="points-label">points</span>
-        </div>
-
-        <button onClick={handleLogout} className="mobile-logout-btn">
-          <span className="logout-icon">🚪</span>
-          <span>Logout</span>
-        </button>
+        <Link to="/profile" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
+          <span>👤</span> Profile
+        </Link>
+        <button onClick={handleLogout} className="mobile-logout-btn">🚪 Logout</button>
       </div>
     </nav>
   );
