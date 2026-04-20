@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createPost } from '../api';
+import { createPost, getMyChannel } from '../api';
 import Confetti from 'react-confetti';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -9,10 +9,13 @@ function CreatePost() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
+    category: 'Story', // Added category field
     content: '',
     coverImage: null,
     coverImagePreview: null
-  }); 
+  });
+  const [hasChannel, setHasChannel] = useState(true);
+  const [channelId, setChannelId] = useState(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [pointsEarned, setPointsEarned] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -22,7 +25,22 @@ function CreatePost() {
   const [readingTime, setReadingTime] = useState(0);
   const quillRef = useRef(null);
 
-  // Calculate word count and reading time
+  // Category options with icons
+  const categories = [
+    { value: 'Story', label: '📖 Story', icon: '📖', color: '#d4a373' },
+    { value: 'Philosophy', label: '🧠 Philosophy', icon: '🧠', color: '#6b8c5c' },
+    { value: 'Technology', label: '💻 Technology', icon: '💻', color: '#4a7c8c' },
+    { value: 'Startups', label: '🚀 Startups', icon: '🚀', color: '#e8a04c' },
+    { value: 'Self Growth', label: '🌱 Self Growth', icon: '🌱', color: '#6a9c6e' },
+    { value: 'Health', label: '🏥 Health', icon: '🏥', color: '#c97e5a' },
+    { value: 'Poetry', label: '✍️ Poetry', icon: '✍️', color: '#b87a9c' },
+    { value: 'Memoir', label: '📔 Memoir', icon: '📔', color: '#a0886a' }
+  ];
+
+  useEffect(() => {
+    checkChannel();
+  }, []);
+
   useEffect(() => {
     const text = formData.content.replace(/<[^>]*>/g, '');
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -30,7 +48,22 @@ function CreatePost() {
     setReadingTime(Math.ceil(words / 200));
   }, [formData.content]);
 
-  // Quill modules configuration
+  const checkChannel = async () => {
+    try {
+      const response = await getMyChannel();
+      if (!response.data.hasChannel) {
+        setHasChannel(false);
+        alert('Please create a channel in your profile before publishing stories.');
+        navigate('/profile');
+      } else {
+        setChannelId(response.data._id);
+      }
+    } catch (err) {
+      setHasChannel(false);
+      navigate('/profile');
+    }
+  };
+
   const modules = {
     toolbar: {
       container: [
@@ -45,9 +78,7 @@ function CreatePost() {
         ['clean']
       ],
     },
-    clipboard: {
-      matchVisual: false,
-    }
+    clipboard: { matchVisual: false }
   };
 
   const formats = [
@@ -60,11 +91,7 @@ function CreatePost() {
     const file = e.target.files[0];
     if (file) {
       const previewUrl = URL.createObjectURL(file);
-      setFormData({
-        ...formData,
-        coverImage: file,
-        coverImagePreview: previewUrl
-      });
+      setFormData({ ...formData, coverImage: file, coverImagePreview: previewUrl });
     }
   };
 
@@ -78,13 +105,12 @@ function CreatePost() {
     }
   };
 
-  const handleContentChange = (value) => {
-    setFormData({ ...formData, content: value });
+  const handleCategoryChange = (category) => {
+    setFormData({ ...formData, category });
   };
 
-  const handleContinue = () => {
-    setShowCelebration(false);
-    navigate('/');
+  const handleContentChange = (value) => {
+    setFormData({ ...formData, content: value });
   };
 
   const handleSubmit = async (e) => {
@@ -98,10 +124,10 @@ function CreatePost() {
     
     const submitData = new FormData();
     submitData.append('title', formData.title);
+    submitData.append('category', formData.category);
     submitData.append('content', formData.content);
     if (formData.coverImage) {
-      submitData.append('image', formData.coverImage);
-      console.log('Image attached:', formData.coverImage.name);
+      submitData.append('cover_image', formData.coverImage);
     }
     
     try {
@@ -111,11 +137,14 @@ function CreatePost() {
       
       const user = JSON.parse(localStorage.getItem('user'));
       if (user) {
-        user.points += response.data.points_earned;
-        user.total_blogs += 1;
+        user.points = (user.points || 0) + response.data.points_earned;
         localStorage.setItem('user', JSON.stringify(user));
       }
       
+      setTimeout(() => {
+        setShowCelebration(false);
+        navigate('/');
+      }, 3000);
     } catch (err) {
       console.error('Failed to create post:', err);
       alert('Failed to create post. Please try again.');
@@ -124,9 +153,16 @@ function CreatePost() {
     }
   };
 
-  const renderPreview = () => {
-    return { __html: formData.content };
+  const handleContinue = () => {
+    setShowCelebration(false);
+    navigate('/');
   };
+
+  const renderPreview = () => ({ __html: formData.content });
+
+  if (!hasChannel) return null;
+
+  const selectedCategory = categories.find(c => c.value === formData.category);
 
   return (
     <div className="story-editor">
@@ -157,6 +193,11 @@ function CreatePost() {
             <span className="stat-badge">📝 {wordCount} words</span>
             <span className="stat-badge">⏱️ {readingTime} min read</span>
             {formData.coverImagePreview && <span className="stat-badge">🖼️ Cover added</span>}
+            {formData.category && (
+              <span className="stat-badge" style={{ background: selectedCategory?.color + '20', color: selectedCategory?.color }}>
+                {selectedCategory?.icon} {formData.category}
+              </span>
+            )}
           </div>
           <div className="editor-tabs">
             <button 
@@ -219,8 +260,39 @@ function CreatePost() {
               {titleError && <div className="title-error">{titleError}</div>}
             </div>
             
+            {/* Category Selection - Beautiful Grid */}
+            <div className="category-selection-section">
+              <label className="category-label">
+                <span className="label-icon">🏷️</span>
+                Choose Category
+              </label>
+              <div className="category-grid">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => handleCategoryChange(cat.value)}
+                    className={`category-card ${formData.category === cat.value ? 'active' : ''}`}
+                    style={{
+                      '--category-color': cat.color
+                    }}
+                  >
+                    <span className="category-icon">{cat.icon}</span>
+                    <span className="category-name">{cat.label}</span>
+                    {formData.category === cat.value && (
+                      <span className="category-check">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
             {/* Rich Text Editor */}
             <div className="editor-content-section">
+              <label className="editor-label">
+                <span className="label-icon">✍️</span>
+                Write Your Story
+              </label>
               <div className="rich-text-editor">
                 <ReactQuill
                   ref={quillRef}
@@ -250,6 +322,9 @@ function CreatePost() {
                   <img src={formData.coverImagePreview} alt="Cover" />
                 </div>
               )}
+              <div className="preview-category-tag" style={{ background: selectedCategory?.color + '20', color: selectedCategory?.color }}>
+                {selectedCategory?.icon} {formData.category}
+              </div>
               <h1 className="preview-title">{formData.title || 'Untitled Story'}</h1>
               <div className="preview-meta">
                 <span className="preview-reading-time">{readingTime} min read</span>
