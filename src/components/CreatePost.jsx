@@ -5,7 +5,7 @@ import Confetti from 'react-confetti';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
-function CreatePost() { 
+function CreatePost() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
