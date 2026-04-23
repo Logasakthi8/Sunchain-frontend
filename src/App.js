@@ -27,7 +27,7 @@ function App() {
                 <span className="public-logo-text">Sunchain</span>
               </Link>
               <div className="public-nav-links">
-                <Link to="/" className="public-nav-link home-link">Stories</Link>
+                <Link to="/" className="public-nav-link home-link">Explore</Link>
                 <Link to="/login" className="public-nav-link login-link">Login</Link>
                 <Link to="/signup" className="public-nav-link signup-link">Sign Up</Link>
               </div>
