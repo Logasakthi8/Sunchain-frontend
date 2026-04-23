@@ -140,13 +140,41 @@ function FullPost() {
     return null;
   };
 
+  // Get template type for display
+  const getTemplateType = () => {
+    if (post?.postType) {
+      const templateMap = {
+        growth: 'Growth Experiment',
+        failure: 'Failure Story',
+        startup: 'Startup Update',
+        lesson: 'Lesson Learned',
+        journey: 'Journey Update'
+      };
+      return templateMap[post.postType] || 'Insight';
+    }
+    return 'Insight';
+  };
+
+  // Template colors
+  const templateColors = {
+    'Growth Experiment': '#2c5f2d',
+    'Failure Story': '#c97e5a',
+    'Startup Update': '#e8a04c',
+    'Lesson Learned': '#6b8c5c',
+    'Journey Update': '#b87a9c',
+    'Insight': '#d4a373'
+  };
+
+  const templateType = getTemplateType();
+  const templateColor = templateColors[templateType];
+
   if (authError) {
     return (
       <div className="auth-error-container">
         <div className="auth-error-card">
           <div className="auth-error-icon">🔒</div>
           <h2>Sign In Required</h2>
-          <p>Please sign in to read full stories</p>
+          <p>Please sign in to read this insight</p>
           <button onClick={() => navigate('/login')} className="auth-signin-btn">Sign In</button>
         </div>
       </div>
@@ -154,12 +182,17 @@ function FullPost() {
   }
 
   if (loading) return <div className="loading-screen"><div className="loading-spinner"></div></div>;
-  if (!post) return <div className="error-container">Story not found</div>;
+  if (!post) return <div className="error-container">Insight not found</div>;
 
   const imageUrl = getImageUrl();
 
   return (
     <article className="full-post-sunchain">
+      {/* Template Badge */}
+      <div className="fullpost-template-badge" style={{ background: templateColor + '15', color: templateColor }}>
+        {templateType}
+      </div>
+
       {imageUrl && (
         <div className="post-hero-image">
           <img src={imageUrl} alt={post.title} />
@@ -190,7 +223,7 @@ function FullPost() {
         <p className="progress-text">{Math.round(scrollPercentage)}% read</p>
       </div>
 
-      {showUnlock && <div className="unlock-message">🎉 You've unlocked interactions! You can now like this story.</div>}
+      {showUnlock && <div className="unlock-message">🎉 You've unlocked interactions! You can now like this insight.</div>}
 
       <div className="like-section">
         <button onClick={handleLike} className={`like-btn ${liked ? 'liked' : ''} ${likeEnabled ? 'enabled' : 'disabled'}`} disabled={!likeEnabled || liked}>
@@ -202,7 +235,7 @@ function FullPost() {
       <div className="comments-section">
         <h3>💬 Comments ({post.comments?.length || 0})</h3>
         <form onSubmit={handleComment} className="comment-form">
-          <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your thoughts..." rows="3" />
+          <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your thoughts on this insight..." rows="3" />
           <button type="submit" disabled={!comment.trim()}>Post Comment</button>
         </form>
         
