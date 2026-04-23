@@ -7,10 +7,6 @@ function Feed() {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-
-  // Define categories
-  const categories = ['All', 'Story', 'Philosophy', 'Technology', 'Startups', 'Self Growth', 'Health', 'Poetry', 'Memoir'];
 
   useEffect(() => {
     loadPosts();
@@ -18,12 +14,11 @@ function Feed() {
 
   useEffect(() => {
     filterPosts();
-  }, [searchQuery, selectedCategory, posts]);
+  }, [searchQuery, posts]);
 
   const loadPosts = async () => {
     try {
       const response = await getPosts();
-      console.log('Posts loaded:', response.data);
       setPosts(response.data);
       setFilteredPosts(response.data);
     } catch (err) {
@@ -36,12 +31,7 @@ function Feed() {
   const filterPosts = () => {
     let filtered = [...posts];
     
-    // Filter by category
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter(post => post.category === selectedCategory);
-    }
-    
-    // Filter by search query
+    // Filter by search query only
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(post => 
@@ -54,10 +44,6 @@ function Feed() {
     setFilteredPosts(filtered);
   };
 
-  const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
-  };
-
   if (loading) {
     return (
       <div className="loading-screen">
@@ -66,7 +52,7 @@ function Feed() {
           <div className="loading-circle"></div>
           <div className="loading-circle"></div>
         </div>
-        <p>Loading stories...</p>
+        <p>Loading insights...</p>
       </div>
     );
   }
@@ -77,8 +63,8 @@ function Feed() {
       <div className="feed-hero">
         <div className="hero-content">
           <div className="hero-tagline">
-            <h1>Discover stories that go beyond the surface</h1>
-            <p>Real experiences. Fully told.</p>
+            <h1>Learn from real experiences, <span className="gradient-text">not just stories</span></h1>
+            <p>Structured insights from builders and thinkers</p>
           </div>
           
           <div className="search-section">
@@ -86,7 +72,7 @@ function Feed() {
               <span className="search-icon">🔍</span>
               <input
                 type="text"
-                placeholder="Search stories, channels, or writers..."
+                placeholder="Search insights, channels, or writers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
@@ -101,26 +87,10 @@ function Feed() {
         </div>
       </div>
 
-      {/* Category Filter */}
-      <div className="category-filter">
-        <div className="filter-scroll">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => handleCategoryClick(cat)}
-              className={`filter-chip ${selectedCategory === cat ? 'active' : ''}`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Results Count */}
       <div className="results-header">
         <span className="results-count">
-          {filteredPosts.length} {filteredPosts.length === 1 ? 'story' : 'stories'}
-          {selectedCategory !== 'All' && ` in ${selectedCategory}`}
+          {filteredPosts.length} {filteredPosts.length === 1 ? 'insight' : 'insights'}
           {searchQuery && ` matching "${searchQuery}"`}
         </span>
       </div>
@@ -129,21 +99,18 @@ function Feed() {
       {filteredPosts.length === 0 ? (
         <div className="empty-feed">
           <div className="empty-icon">📖</div>
-          <h3>No stories found</h3>
+          <h3>No insights found</h3>
           <p>
-            {selectedCategory !== 'All' 
-              ? `No stories in ${selectedCategory} category. Try another category.`
-              : 'Try different search terms or explore other categories'}
+            {searchQuery 
+              ? `No insights matching "${searchQuery}"`
+              : 'Be the first to share an insight'}
           </p>
-          {(selectedCategory !== 'All' || searchQuery) && (
+          {searchQuery && (
             <button 
-              onClick={() => {
-                setSelectedCategory('All');
-                setSearchQuery('');
-              }} 
+              onClick={() => setSearchQuery('')} 
               className="clear-filters-btn"
             >
-              Clear Filters
+              Clear Search
             </button>
           )}
         </div>
