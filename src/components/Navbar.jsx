@@ -70,13 +70,13 @@ function Navbar() {
 
       <div className={`mobile-nav-sunchain ${isMobileMenuOpen ? 'open' : ''}`}>
         <Link to="/" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
-          <span>📝</span> Stories
+          <span>📝</span> Explore
         </Link>
         <Link to="/subscriptions" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
           <span>🔔</span> Subscriptions
         </Link>
         <Link to="/create" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
-          <span>✍️</span> Write
+          <span>✍️</span> Share Insights
         </Link>
         <Link to="/profile" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>
           <span>👤</span> Profile
