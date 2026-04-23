@@ -5,7 +5,6 @@ function PostCard({ post, index }) {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
-  const [logoError, setLogoError] = useState(false);
 
   const getImageUrl = () => {
     if (imgError) return null;
@@ -15,18 +14,47 @@ function PostCard({ post, index }) {
     return null;
   };
 
-  const getChannelLogoUrl = () => {
-    if (logoError) return null;
-    if (post.channel_logo_base64) {
-      return `data:image/jpeg;base64,${post.channel_logo_base64}`;
+  const imageUrl = getImageUrl();
+  const readingTime = Math.ceil(post.content.replace(/<[^>]*>/g, '').split(' ').length / 200);
+  const daysAgo = Math.floor((new Date() - new Date(post.created_at)) / (1000 * 60 * 60 * 24));
+
+  // Extract key insight from content
+  const extractKeyInsight = (content) => {
+    const insightMatch = content.match(/<div style="background: #fef5e8;.*?>.*?<h3.*?>.*?<\/h3>\s*<p>(.*?)<\/p>/s);
+    if (insightMatch) {
+      return insightMatch[1].substring(0, 120) + (insightMatch[1].length > 120 ? '...' : '');
     }
     return null;
   };
 
-  const imageUrl = getImageUrl();
-  const channelLogoUrl = getChannelLogoUrl();
-  const readingTime = Math.ceil(post.content.replace(/<[^>]*>/g, '').split(' ').length / 200);
-  const daysAgo = Math.floor((new Date() - new Date(post.created_at)) / (1000 * 60 * 60 * 24));
+  const keyInsight = extractKeyInsight(post.content);
+  
+  // Determine template type
+  // Update the getTemplateType function
+const getTemplateType = () => {
+  if (post.postType) {
+    const templateMap = {
+      growth: 'Growth Experiment',
+      failure: 'Failure Story',
+      startup: 'Startup Update',
+      lesson: 'Lesson Learned',
+      journey: 'Journey Update'
+    };
+    return templateMap[post.postType] || 'Insight';
+  }
+  return 'Insight';
+};
+  const templateType = getTemplateType();
+  
+  // Template colors
+  const templateColors = {
+    'Growth Experiment': '#2c5f2d',
+    'Failure Story': '#c97e5a',
+    'Startup Update': '#e8a04c',
+    'Lesson Learned': '#6b8c5c',
+    'Journey Update': '#b87a9c',
+    'Insight': '#d4a373'
+  };
 
   const handleChannelClick = (e) => {
     e.stopPropagation();
@@ -38,7 +66,7 @@ function PostCard({ post, index }) {
   const handleReadMore = () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      const confirmLogin = window.confirm('Please sign in to read full stories. Would you like to login?');
+      const confirmLogin = window.confirm('Please sign in to read full insights.');
       if (confirmLogin) navigate('/login');
     } else {
       navigate(`/post/${post._id}`);
@@ -48,12 +76,10 @@ function PostCard({ post, index }) {
   // Get channel initial
   const channelInitial = post.channel_name?.charAt(0).toUpperCase() || 'C';
   
-  // Generate consistent color
   const getAvatarColor = (name) => {
     const colors = [
       '#d4a373', '#2c5f2d', '#4a7c4b', '#b87a4a', '#6b8c5c',
-      '#e8a04c', '#c97e5a', '#8b6b4a', '#5c8a6e', '#a0784c',
-      '#3d6b4f', '#c49a6c', '#e0a878', '#6e9f6e', '#b88a5a'
+      '#e8a04c', '#c97e5a', '#8b6b4a', '#5c8a6e', '#a0784c'
     ];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -65,21 +91,16 @@ function PostCard({ post, index }) {
 
   const avatarColor = getAvatarColor(post.channel_name || post.author_name);
 
-  // Debug log
-  console.log('Post:', post.title);
-  console.log('Has channel_logo_base64:', !!post.channel_logo_base64);
-  console.log('Channel name:', post.channel_name);
-
   return (
     <div 
-      className={`story-card ${isHovered ? 'hovered' : ''}`}
+      className={`insight-card ${isHovered ? 'hovered' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{ animationDelay: `${index * 0.05}s` }}
     >
       {/* Thumbnail Image */}
       {imageUrl && (
-        <div className="story-card-image">
+        <div className="insight-card-image">
           <img 
             src={imageUrl} 
             alt={post.title} 
@@ -91,8 +112,13 @@ function PostCard({ post, index }) {
       )}
       
       {/* Content */}
-      <div className="story-card-content">
-        {/* YouTube-style Channel Info */}
+      <div className="insight-card-content">
+        {/* Template Badge - Top Priority */}
+        <div className="template-badge-insight" style={{ background: templateColors[templateType] + '15', color: templateColors[templateType] }}>
+          {templateType}
+        </div>
+
+        {/* Channel Info */}
         <div className="channel-info-row">
           <button 
             onClick={handleChannelClick}
@@ -102,19 +128,7 @@ function PostCard({ post, index }) {
               className="channel-avatar-small" 
               style={{ backgroundColor: avatarColor }}
             >
-              {channelLogoUrl ? (
-                <img 
-                  src={channelLogoUrl} 
-                  alt={post.channel_name}
-                  onError={() => {
-                    console.log('Logo failed to load for:', post.channel_name);
-                    setLogoError(true);
-                  }}
-                  onLoad={() => console.log('Logo loaded for:', post.channel_name)}
-                />
-              ) : (
-                <span className="avatar-initial">{channelInitial}</span>
-              )}
+              <span className="avatar-initial">{channelInitial}</span>
             </div>
           </button>
           
@@ -131,22 +145,35 @@ function PostCard({ post, index }) {
         </div>
 
         {/* Title */}
-        <h3 className="story-title">{post.title}</h3>
+        <h3 className="insight-title">{post.title}</h3>
         
-        {/* Stats Row */}
-        <div className="story-footer">
-          <div className="story-stats">
-            <button className="stat-btn">
-              <span>❤️</span> {post.likes || 0}
-            </button>
-            <button className="stat-btn">
-              <span>💬</span> {post.comments?.length || 0}
-            </button>
+        {/* Key Insight Box - Game Changer */}
+        {keyInsight && (
+          <div className="key-insight-box">
+            <div className="insight-icon">💡</div>
+            <div className="insight-text">{keyInsight}</div>
+          </div>
+        )}
+        
+        {/* Meta Row - Template + Category */}
+        <div className="meta-row">
+          <span className="meta-template">{templateType}</span>
+          <span className="meta-separator">•</span>
+          <span className="meta-category">{post.category || 'Insight'}</span>
+        </div>
+        
+        {/* Stats Row - Reduced importance */}
+        <div className="insight-footer">
+          <div className="insight-stats">
+            <span className="stat-icon-small">❤️</span>
+            <span className="stat-number-small">{post.likes || 0}</span>
+            <span className="stat-icon-small">💬</span>
+            <span className="stat-number-small">{post.comments?.length || 0}</span>
           </div>
           
-          <button onClick={handleReadMore} className="read-more-btn">
-            Read Story
-            <svg className="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button onClick={handleReadMore} className="view-insight-btn">
+            View Insight
+            <svg className="arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </button>
