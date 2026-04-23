@@ -47,7 +47,6 @@ function Profile() {
       const response = await getMyChannel();
       if (response.data.hasChannel !== false) {
         setChannel(response.data);
-        // Update localStorage to reflect channel existence
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
           user.hasChannel = true;
@@ -92,7 +91,6 @@ function Profile() {
     try {
       const response = await createChannel(submitData);
       
-      // Update user data in localStorage
       const user = JSON.parse(localStorage.getItem('user'));
       if (user) {
         user.hasChannel = true;
@@ -101,12 +99,9 @@ function Profile() {
       }
       
       setShowCreateChannel(false);
-      // Reset form
       setChannelForm({ name: '', description: '' });
       setProfileImage(null);
       setProfileImagePreview(null);
-      
-      // Reload channel data
       await loadChannel();
     } catch (err) {
       console.error('Error creating channel:', err);
@@ -123,6 +118,39 @@ function Profile() {
     window.location.reload();
   };
 
+  // Extract key insight from post content - with error handling
+  const extractKeyInsight = (content) => {
+    if (!content || typeof content !== 'string') return null;
+    try {
+      const insightMatch = content.match(/<div style="background: #fef5e8;.*?>.*?<h3.*?>.*?<\/h3>\s*<p>(.*?)<\/p>/s);
+      if (insightMatch && insightMatch[1]) {
+        return insightMatch[1].substring(0, 100) + (insightMatch[1].length > 100 ? '...' : '');
+      }
+      return null;
+    } catch (err) {
+      console.error('Error extracting insight:', err);
+      return null;
+    }
+  };
+
+  // Get template type with error handling
+  const getTemplateType = (postType) => {
+    if (!postType) return 'Insight';
+    const templateMap = {
+      growth: 'Growth Experiment',
+      failure: 'Failure Story',
+      startup: 'Startup Update',
+      lesson: 'Lesson Learned',
+      journey: 'Journey Update'
+    };
+    return templateMap[postType] || 'Insight';
+  };
+
+  // Check if post has content
+  const hasValidContent = (post) => {
+    return post && post.content && typeof post.content === 'string';
+  };
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -135,6 +163,15 @@ function Profile() {
       </div>
     );
   }
+
+  const templateColors = {
+    'Growth Experiment': '#2c5f2d',
+    'Failure Story': '#c97e5a',
+    'Startup Update': '#e8a04c',
+    'Lesson Learned': '#6b8c5c',
+    'Journey Update': '#b87a9c',
+    'Insight': '#d4a373'
+  };
 
   return (
     <div className="profile-container-sunchain">
@@ -149,15 +186,15 @@ function Profile() {
           <div className="profile-stats">
             <div className="stat">
               <span className="stat-value">⭐ {profile?.points || 0}</span>
-              <span className="stat-label">Points</span>
+              <span className="stat-label">Contribution Score</span>
             </div>
             <div className="stat">
               <span className="stat-value">{profile?.total_posts || 0}</span>
-              <span className="stat-label">Stories</span>
+              <span className="stat-label">Insights Shared</span>
             </div>
             <div className="stat">
               <span className="stat-value">{profile?.subscribers || 0}</span>
-              <span className="stat-label">Subscribers</span>
+              <span className="stat-label">Learners</span>
             </div>
           </div>
         </div>
@@ -169,7 +206,7 @@ function Profile() {
       {/* Channel Section */}
       <div className="channel-section">
         <div className="section-header">
-          <h2> Your Channel</h2>
+          <h2>📡 Your Channel</h2>
         </div>
         
         {channel ? (
@@ -185,16 +222,16 @@ function Profile() {
               <h3>{channel.name}</h3>
               <p>{channel.description || 'No description yet.'}</p>
               <div className="channel-stats">
-                <span>🌿 {channel.subscriber_count || 0} subscribers</span>
-                <span>📝 {channel.posts?.length || 0} stories</span>
+                <span>🌿 {channel.subscriber_count || 0} learners</span>
+                <span>🧠 {channel.posts?.length || 0} insights</span>
               </div>
             </div>
           </div>
         ) : (
           <div className="no-channel-card">
-            <div className="no-channel-icon"></div>
+            <div className="no-channel-icon">🌿</div>
             <p>You haven't created a channel yet.</p>
-            <p className="no-channel-subtext">Create a channel to start publishing stories</p>
+            <p className="no-channel-subtext">Create a channel to share structured insights from your experience</p>
             <button onClick={() => setShowCreateChannel(true)} className="create-channel-primary">
               ✨ Create Your Channel
             </button>
@@ -202,38 +239,58 @@ function Profile() {
         )}
       </div>
 
-      {/* Recent Posts Section */}
+      {/* Recent Insights Section - Updated with error handling */}
       {channel && channel.posts && channel.posts.length > 0 && (
-        <div className="recent-posts-section">
-          <h2>📝 Your Recent Stories</h2>
-          <div className="recent-posts-grid">
-            {channel.posts.slice(0, 5).map((post) => (
-              <div key={post._id} className="recent-post-card" onClick={() => navigate(`/post/${post._id}`)}>
-                {post.cover_image_base64 && (
-                  <div className="post-cover-small">
-                    <img src={`data:image/jpeg;base64,${post.cover_image_base64}`} alt={post.title} />
-                  </div>
-                )}
-                <div className="post-info">
-                  <h4>{post.title}</h4>
-                  <div className="post-meta">
-                    <span>❤️ {post.likes}</span>
-                    <span>💬 {post.comments}</span>
-                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
+        <div className="recent-insights-section">
+          <h2>🧠 Your Recent Insights</h2>
+          <div className="recent-insights-grid">
+            {channel.posts.slice(0, 5).map((post) => {
+              // Only extract insight if content exists
+              const keyInsight = hasValidContent(post) ? extractKeyInsight(post.content) : null;
+              const templateType = getTemplateType(post.postType);
+              return (
+                <div key={post._id} className="recent-insight-card" onClick={() => navigate(`/post/${post._id}`)}>
+                  {post.cover_image_base64 && (
+                    <div className="insight-cover-small">
+                      <img src={`data:image/jpeg;base64,${post.cover_image_base64}`} alt={post.title} />
+                    </div>
+                  )}
+                  <div className="insight-info">
+                    <div className="insight-header-row">
+                      {templateType && (
+                        <div className="insight-template-badge" style={{ background: templateColors[templateType] + '15', color: templateColors[templateType] }}>
+                          {templateType}
+                        </div>
+                      )}
+                      <div className="insight-meta">
+                        <span>❤️ {post.likes || 0}</span>
+                        <span>💬 {post.comments || 0}</span>
+                      </div>
+                    </div>
+                    <h4>{post.title}</h4>
+                    {keyInsight && (
+                      <div className="insight-preview">
+                        <span className="insight-preview-icon">💡</span>
+                        <span className="insight-preview-text">{keyInsight}</span>
+                      </div>
+                    )}
+                    <div className="insight-date">
+                      {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Recent'}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           {channel.posts.length > 5 && (
             <button onClick={() => navigate(`/channel/${channel._id}`)} className="view-all-btn">
-              View All Stories →
+              View All Insights →
             </button>
           )}
         </div>
       )}
 
-      {/* Create Channel Modal */}
+      {/* Create Channel Modal - Updated placeholder */}
       {showCreateChannel && (
         <div className="modal-overlay" onClick={() => setShowCreateChannel(false)}>
           <div className="create-channel-modal" onClick={(e) => e.stopPropagation()}>
@@ -251,7 +308,7 @@ function Profile() {
                   type="text"
                   value={channelForm.name}
                   onChange={(e) => setChannelForm({ ...channelForm, name: e.target.value })}
-                  placeholder="e.g., The Daily Philosopher"
+                  placeholder="e.g., The Growth Lab"
                   required
                 />
               </div>
@@ -261,7 +318,7 @@ function Profile() {
                 <textarea
                   value={channelForm.description}
                   onChange={(e) => setChannelForm({ ...channelForm, description: e.target.value })}
-                  placeholder="Tell your audience what your channel is about..."
+                  placeholder="Share what you've learned, built, or experienced..."
                   rows="3"
                 />
               </div>
