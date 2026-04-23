@@ -13,6 +13,15 @@ function CreateChannel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Example channel names for inspiration
+  const exampleChannels = [
+    { name: "Startup Experiments", icon: "🚀" },
+    { name: "Lessons from Building in Public", icon: "🏗️" },
+    { name: "Daily Learnings in Tech", icon: "💻" },
+    { name: "Growth Marketing Learnings", icon: "📈" },
+    { name: "Product Management Insights", icon: "📦" }
+  ];
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -41,7 +50,6 @@ function CreateChannel() {
     
     try {
       const response = await createChannel(submitData);
-      // Update user data to reflect channel creation
       const user = JSON.parse(localStorage.getItem('user'));
       user.hasChannel = true;
       user.channelId = response.data.channel_id;
@@ -55,13 +63,19 @@ function CreateChannel() {
     }
   };
 
+  const fillExample = (exampleName) => {
+    setFormData({ ...formData, name: exampleName });
+  };
+
   return (
     <div className="create-channel-container">
       <div className="create-channel-card">
         <div className="card-header">
           <span className="header-icon">🌟</span>
-          <h1>Create Your Channel</h1>
-          <p>Start your storytelling journey by creating a channel</p>
+          <h1>Start Sharing What You've Learned</h1>
+          <p className="header-subtext">
+            We help you turn your experiences into structured, actionable insights.
+          </p>
         </div>
         
         {error && <div className="error-message">{error}</div>}
@@ -73,7 +87,7 @@ function CreateChannel() {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., The Daily Philosopher"
+              placeholder="e.g., The Growth Lab"
               required
             />
           </div>
@@ -83,7 +97,7 @@ function CreateChannel() {
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Tell your audience what your channel is about..."
+              placeholder="Share what you've learned, built, or experienced..."
               rows="4"
             />
           </div>
@@ -110,9 +124,37 @@ function CreateChannel() {
           </div>
           
           <button type="submit" className="create-channel-btn" disabled={loading}>
-            {loading ? 'Creating...' : '✨ Create Channel'}
+            {loading ? 'Creating...' : '✨ Start Sharing Insights'}
           </button>
         </form>
+
+        {/* Example Channels Section - Inspirational */}
+        <div className="example-channels">
+          <div className="example-header">
+            <span className="example-icon">💡</span>
+            <span>Channel name ideas</span>
+          </div>
+          <div className="example-list">
+            {exampleChannels.map((example, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className="example-chip"
+                onClick={() => fillExample(example.name)}
+              >
+                <span>{example.icon}</span>
+                <span>{example.name}</span>
+              </button>
+            ))}
+          </div>
+          <p className="example-hint">
+            Click any example to use it as a starting point
+          </p>
+        </div>
+
+        <div className="card-footer-note">
+          <p>Your channel becomes your identity as a knowledge creator</p>
+        </div>
       </div>
     </div>
   );
