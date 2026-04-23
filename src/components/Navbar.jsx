@@ -35,7 +35,7 @@ function Navbar() {
         <div className="nav-links-sunchain">
           <Link to="/" className={`nav-link-sunchain ${isActive('/') ? 'active' : ''}`}>
             <span className="nav-icon">📝</span>
-            <span>Stories</span>
+            <span>Explore </span>
           </Link>
           
           <Link to="/subscriptions" className={`nav-link-sunchain ${isActive('/subscriptions') ? 'active' : ''}`}>
@@ -45,7 +45,7 @@ function Navbar() {
           
           <Link to="/create" className={`nav-link-sunchain ${isActive('/create') ? 'active' : ''}`}>
             <span className="nav-icon">✍️</span>
-            <span>Write</span>
+            <span>Share Insight</span>
           </Link>
           
           <Link to="/profile" className={`nav-link-sunchain ${isActive('/profile') ? 'active' : ''}`}>
