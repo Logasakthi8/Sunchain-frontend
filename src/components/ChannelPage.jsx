@@ -21,7 +21,6 @@ function ChannelPage() {
       setChannel(response.data);
       setSubscriberCount(response.data.subscriber_count || 0);
       
-      // Check if this is the user's own channel
       const user = JSON.parse(localStorage.getItem('user'));
       if (user && response.data.owner_id === user._id) {
         setIsOwnChannel(true);
@@ -36,7 +35,7 @@ function ChannelPage() {
   const handleSubscribe = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      const confirmLogin = window.confirm('Please sign in to subscribe to channels.');
+      const confirmLogin = window.confirm('Please sign in to follow insights');
       if (confirmLogin) navigate('/login');
       return;
     }
@@ -52,6 +51,43 @@ function ChannelPage() {
 
   const handlePostClick = (postId) => {
     navigate(`/post/${postId}`);
+  };
+
+  // Extract key insight from post content
+  const extractKeyInsight = (content) => {
+    if (!content || typeof content !== 'string') return null;
+    try {
+      const insightMatch = content.match(/<div style="background: #fef5e8;.*?>.*?<h3.*?>.*?<\/h3>\s*<p>(.*?)<\/p>/s);
+      if (insightMatch && insightMatch[1]) {
+        return insightMatch[1].substring(0, 120) + (insightMatch[1].length > 120 ? '...' : '');
+      }
+      return null;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  // Get template type
+  const getTemplateType = (postType) => {
+    if (!postType) return 'Insight';
+    const templateMap = {
+      growth: 'Growth Experiment',
+      failure: 'Failure Story',
+      startup: 'Startup Update',
+      lesson: 'Lesson Learned',
+      journey: 'Journey Update'
+    };
+    return templateMap[postType] || 'Insight';
+  };
+
+  // Template colors
+  const templateColors = {
+    'Growth Experiment': '#2c5f2d',
+    'Failure Story': '#c97e5a',
+    'Startup Update': '#e8a04c',
+    'Lesson Learned': '#6b8c5c',
+    'Journey Update': '#b87a9c',
+    'Insight': '#d4a373'
   };
 
   if (loading) {
@@ -85,58 +121,84 @@ function ChannelPage() {
         </div>
         <div className="channel-info">
           <h1 className="channel-name">{channel.name}</h1>
-          <p className="channel-description">{channel.description || 'No description yet.'}</p>
+          <p className="channel-positioning">
+            Sharing structured learnings and real experiences
+          </p>
+          <p className="channel-description">
+            {channel.description || 'This creator shares structured insights from their experience.'}
+          </p>
           <div className="channel-meta">
-            <span className="meta-item">🌿 {subscriberCount} subscribers</span>
-            <span className="meta-item">📝 {channel.posts?.length || 0} stories</span>
-            <span className="meta-item">👤 Created by {channel.owner_name}</span>
+            <span className="meta-item">🌿 {subscriberCount} followers</span>
+            <span className="meta-item">🧠 {channel.posts?.length || 0} insights</span>
+            <span className="meta-item">👤 Creator</span>
           </div>
           {!isOwnChannel && (
             <button 
               onClick={handleSubscribe}
               className={`subscribe-btn ${isSubscribed ? 'subscribed' : ''}`}
             >
-              {isSubscribed ? '✓ Subscribed' : '+ Subscribe'}
+              {isSubscribed ? '✓ Following Insights' : '+ Follow Insights'}
             </button>
           )}
           {isOwnChannel && (
-            <button className="own-channel-badge">📡 Your Channel</button>
+            <button className="own-channel-badge">📡 Your Knowledge Channel</button>
           )}
         </div>
       </div>
 
-      {/* Posts Section */}
+      {/* Insights Section - Updated from "Stories" to "Insights" */}
       <div className="channel-posts">
-        <h2 className="section-title">All Stories</h2>
+        <h2 className="section-title">🧠 All Insights</h2>
+        
         {channel.posts?.length === 0 ? (
           <div className="empty-posts">
             <div className="empty-icon">📝</div>
-            <p>No stories published yet.</p>
+            <p>No insights shared yet.</p>
             {isOwnChannel && (
               <button onClick={() => navigate('/create')} className="write-first-btn">
-                Write Your First Story
+                Create Your First Learning
               </button>
             )}
           </div>
         ) : (
           <div className="channel-posts-grid">
-            {channel.posts.map((post) => (
-              <div key={post._id} className="channel-post-card" onClick={() => handlePostClick(post._id)}>
-                {post.cover_image_base64 && (
-                  <div className="post-cover">
-                    <img src={`data:image/jpeg;base64,${post.cover_image_base64}`} alt={post.title} />
-                  </div>
-                )}
-                <div className="post-info">
-                  <h3 className="post-title">{post.title}</h3>
-                  <div className="post-meta">
-                    <span>❤️ {post.likes}</span>
-                    <span>💬 {post.comments}</span>
-                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
+            {channel.posts.map((post) => {
+              const keyInsight = extractKeyInsight(post.content);
+              const templateType = getTemplateType(post.postType);
+              const templateColor = templateColors[templateType];
+              
+              return (
+                <div key={post._id} className="channel-post-card" onClick={() => handlePostClick(post._id)}>
+                  {post.cover_image_base64 && (
+                    <div className="post-cover">
+                      <img src={`data:image/jpeg;base64,${post.cover_image_base64}`} alt={post.title} />
+                    </div>
+                  )}
+                  <div className="post-info">
+                    {/* Template Badge */}
+                    <div className="template-badge-channel" style={{ background: templateColor + '15', color: templateColor }}>
+                      {templateType}
+                    </div>
+                    
+                    <h3 className="post-title">{post.title}</h3>
+                    
+                    {/* Key Insight Preview - GAME CHANGER */}
+                    {keyInsight && (
+                      <div className="insight-preview-channel">
+                        <span className="insight-icon">💡</span>
+                        <span className="insight-text">{keyInsight}</span>
+                      </div>
+                    )}
+                    
+                    <div className="post-meta">
+                      <span>❤️ {post.likes || 0}</span>
+                      <span>💬 {post.comments || 0}</span>
+                      <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
