@@ -880,3 +880,18 @@ h1, h2, h3, h4, .logo-text, .story-title, .post-title, .channel-name, .preview-t
     color: #a0a0a0;
   }
 }
+
+.section-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical;
+  background: var(--bg-soft);
+  transition: all 0.2s;
+  white-space: pre-wrap; /* Preserves user spacing */
+  word-wrap: break-word;
+}
