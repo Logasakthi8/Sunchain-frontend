@@ -233,65 +233,70 @@ function CreatePost() {
   };
 
   const generatePreviewHTML = () => {
-    const template = templates[selectedTemplate];
-    if (!template) return '';
-    
-    let content = '';
+  const template = templates[selectedTemplate];
+  if (!template) return '';
+  
+  let content = '';
 
-    // Cover image
-    if (coverImagePreview) {
-      content += `<div style="margin-bottom: 2rem;">`;
-      content += `<img src="${coverImagePreview}" alt="Cover image" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 16px;" />`;
-      content += `</div>`;
-    }
+  // 1. Cover image (top)
+  if (coverImagePreview) {
+    content += `<div style="margin-bottom: 2rem;">`;
+    content += `<img src="${coverImagePreview}" alt="Cover image" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 16px;" />`;
+    content += `</div>`;
+  }
 
-    // Template Badge at top
-    content += `<div style="margin-bottom: 16px; font-size: 14px; color: ${template.color}; background: ${template.color}15; display: inline-block; padding: 4px 12px; border-radius: 20px;">${template.icon} ${template.name}</div>`;
+  // 2. Template Badge
+  content += `<div style="margin-bottom: 16px; font-size: 14px; color: ${template.color}; background: ${template.color}15; display: inline-block; padding: 4px 12px; border-radius: 20px;">${template.icon} ${template.name}</div>`;
 
-    // Title
-    content += `<h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; font-family: Georgia, serif;">${formData.title || 'Untitled Insight'}</h1>`;
+  // 3. Title
+  content += `<h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; font-family: Georgia, serif;">${formData.title || 'Untitled Insight'}</h1>`;
 
-    // Key Insight - ALWAYS TOP (after title)
-    let keyInsightText = '';
-    if (template.fields.includes('keyInsight') && formData.keyInsight) {
-      keyInsightText = formData.keyInsight;
-    } else if (template.fields.includes('lesson') && formData.lesson) {
-      keyInsightText = formData.lesson;
-    } else if (template.fields.includes('insight') && formData.insight) {
-      keyInsightText = formData.insight;
-    } else if (template.fields.includes('ask') && formData.ask) {
-      keyInsightText = formData.ask;
-    } else if (template.fields.includes('reflection') && formData.reflection) {
-      keyInsightText = formData.reflection;
-    }
-
-    if (keyInsightText) {
-      content += `<div style="background: #fef5e8; padding: 24px; border-left: 4px solid #d4a373; border-radius: 12px; margin: 24px 0;">`;
-      content += `<h3 style="margin-bottom: 8px;">💡 Key Insight</h3>`;
-      content += `<p style="margin: 0; line-height: 1.5;">${keyInsightText}</p>`;
-      content += `</div>`;
-    }
-
-    // All fields
-    for (const field of template.fields) {
-      const isSpecialField = field === 'keyInsight' || field === 'lesson' || field === 'insight' || field === 'ask' || field === 'reflection';
-      if (!isSpecialField) {
-        const value = formData[field];
-        if (value) {
-          content += `<h2 style="font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.5rem;">${template.fieldLabels[field]}</h2>`;
-          content += `<p style="line-height: 1.6; margin-bottom: 1rem;">${value.replace(/\n/g, '<br>')}</p>`;
-          
-          if (sectionImages[field] && sectionImages[field].preview) {
-            content += `<div style="margin: 1rem 0;">`;
-            content += `<img src="${sectionImages[field].preview}" alt="Section image" style="max-width: 100%; border-radius: 12px;" />`;
-            content += `</div>`;
-          }
+  // 4. ALL OTHER SECTIONS (Goal, Hypothesis, Action Taken, Result, etc.) - TOP PART
+  for (const field of template.fields) {
+    const isSpecialField = field === 'keyInsight' || field === 'lesson' || field === 'insight' || field === 'ask' || field === 'reflection';
+    if (!isSpecialField) {
+      const value = formData[field];
+      if (value) {
+        content += `<h2 style="font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.5rem;">${template.fieldLabels[field]}</h2>`;
+        content += `<p style="line-height: 1.6; margin-bottom: 1rem;">${value.replace(/\n/g, '<br>')}</p>`;
+        
+        if (sectionImages[field] && sectionImages[field].preview) {
+          content += `<div style="margin: 1rem 0;">`;
+          content += `<img src="${sectionImages[field].preview}" alt="Section image" style="max-width: 100%; border-radius: 12px;" />`;
+          content += `</div>`;
         }
       }
     }
+  }
 
-    return content;
-  };
+  // 5. KEY INSIGHT - AT THE BOTTOM (after all other sections)
+  let keyInsightText = '';
+  
+  if (template.fields.includes('keyInsight') && formData.keyInsight) {
+    keyInsightText = formData.keyInsight;
+  } else if (template.fields.includes('lesson') && formData.lesson) {
+    keyInsightText = formData.lesson;
+  } else if (template.fields.includes('insight') && formData.insight) {
+    keyInsightText = formData.insight;
+  } else if (template.fields.includes('ask') && formData.ask) {
+    keyInsightText = formData.ask;
+  } else if (template.fields.includes('reflection') && formData.reflection) {
+    keyInsightText = formData.reflection;
+  }
+
+  // Display Key Insight at the bottom
+    // Display Key Insight at the bottom with enhanced styling
+  if (keyInsightText) {
+    content += `<div style="background: linear-gradient(135deg, #fef5e8, #fff8f0); padding: 28px; border-left: 5px solid #d4a373; border-radius: 16px; margin: 40px 0 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">`;
+    content += `<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">`;
+    content += `<span style="font-size: 1.3rem;">💡</span>`;
+    content += `<h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #2c5f2d;">Key Insight</h3>`;
+    content += `</div>`;
+    content += `<p style="margin: 0; line-height: 1.6; font-size: 1rem; color: #2d3748;">${keyInsightText}</p>`;
+    content += `</div>`;
+  }
+  return content;
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
