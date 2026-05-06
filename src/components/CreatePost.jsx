@@ -251,14 +251,15 @@ function CreatePost() {
   // 3. Title
   content += `<h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; font-family: Georgia, serif;">${formData.title || 'Untitled Insight'}</h1>`;
 
-  // 4. ALL OTHER SECTIONS (Goal, Hypothesis, Action Taken, Result, etc.) - TOP PART
+  // 4. ALL OTHER SECTIONS (Goal, Hypothesis, Action Taken, Result, etc.)
   for (const field of template.fields) {
     const isSpecialField = field === 'keyInsight' || field === 'lesson' || field === 'insight' || field === 'ask' || field === 'reflection';
     if (!isSpecialField) {
       const value = formData[field];
       if (value) {
         content += `<h2 style="font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.5rem;">${template.fieldLabels[field]}</h2>`;
-        content += `<p style="line-height: 1.6; margin-bottom: 1rem;">${value.replace(/\n/g, '<br>')}</p>`;
+        // Preserve line breaks in regular sections
+        content += `<p style="line-height: 1.6; margin-bottom: 1rem; white-space: pre-wrap;">${value.replace(/\n/g, '<br>')}</p>`;
         
         if (sectionImages[field] && sectionImages[field].preview) {
           content += `<div style="margin: 1rem 0;">`;
@@ -269,7 +270,7 @@ function CreatePost() {
     }
   }
 
-  // 5. KEY INSIGHT - AT THE BOTTOM (after all other sections)
+  // 5. KEY INSIGHT - AT THE BOTTOM with preserved formatting and spacing
   let keyInsightText = '';
   
   if (template.fields.includes('keyInsight') && formData.keyInsight) {
@@ -284,20 +285,28 @@ function CreatePost() {
     keyInsightText = formData.reflection;
   }
 
-  // Display Key Insight at the bottom
-    // Display Key Insight at the bottom with enhanced styling
-  if (keyInsightText) {
-    content += `<div style="background: linear-gradient(135deg, #fef5e8, #fff8f0); padding: 28px; border-left: 5px solid #d4a373; border-radius: 16px; margin: 40px 0 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">`;
-    content += `<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">`;
-    content += `<span style="font-size: 1.3rem;">💡</span>`;
-    content += `<h3 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #2c5f2d;">Key Insight</h3>`;
-    content += `</div>`;
-    content += `<p style="margin: 0; line-height: 1.6; font-size: 1rem; color: #2d3748;">${keyInsightText}</p>`;
-    content += `</div>`;
-  }
+  // Display Key Insight at the bottom with preserved user spacing and formatting
+  // Display Key Insight at the bottom with preserved user spacing
+if (keyInsightText) {
+  // Preserve all whitespace and line breaks exactly as user entered
+  const formattedText = keyInsightText
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>')
+    .replace(/\s\s/g, ' &nbsp;');
+  
+  content += `<div style="background: #fef5e8; padding: 28px; border-left: 4px solid #d4a373; border-radius: 12px; margin: 40px 0 20px 0;">`;
+  content += `<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">`;
+  content += `<span style="font-size: 1.3rem;">💡</span>`;
+  content += `<h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #2c5f2d;">Key Insight</h3>`;
+  content += `</div>`;
+  content += `<div style="margin: 0; line-height: 1.6; font-size: 1rem; white-space: pre-wrap; word-wrap: break-word;">${formattedText}</div>`;
+  content += `</div>`;
+}
+
   return content;
 };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
